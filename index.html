@@ -4,204 +4,617 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Git Learning Guide — Interactive Mindmap</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <title>Git Learning Roadmap</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
-        :root {
-            --bg: #080c14;
-            --surface: #0d1117;
-            --surface2: #161b27;
-            --border: #21293b;
-            --accent: #f05032;
-            --text: #cdd9e5;
-            --text-dim: #546e7a;
-            --font-mono: 'JetBrains Mono', monospace;
-            --font-main: 'Syne', sans-serif;
-        }
-
-        * {
+        /* ─── RESET & VARIABLES ─── */
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        :root {
+            --git: #F05032;
+            --git-dark: #c03e22;
+            --git-light: #ff7557;
+            --git-pale: #fff2ef;
+            --bg: #faf9f7;
+            --bg2: #f2f0ec;
+            --surface: #ffffff;
+            --border: #e8e3dc;
+            --text: #1a1410;
+            --text-2: #5a4f47;
+            --text-3: #9a8f87;
+            --green: #22c55e;
+            --amber: #f59e0b;
+            --cyan: #06b6d4;
+            --violet: #7c3aed;
+            --pink: #ec4899;
+            --font: 'Outfit', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+            --radius: 16px;
+            --shadow: 0 4px 24px rgba(240, 80, 50, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 40px rgba(240, 80, 50, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+            --line-color: #e8e3dc;
         }
 
-        header {
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ─── ANIMATED BG GRID ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240, 80, 50, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240, 80, 50, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(250, 249, 247, 0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 24px;
-            background: rgba(13, 17, 23, 0.97);
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
-            flex-shrink: 0;
+            height: 60px;
+            gap: 12px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
         }
 
-        .logo-svg {
-            width: 34px;
-            height: 34px;
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
         }
 
-        .logo h1 {
-            font-size: 19px;
+        .logo-text {
+            font-size: 18px;
             font-weight: 800;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
+            color: var(--text);
         }
 
-        .logo h1 span {
-            color: var(--accent);
+        .logo-text span {
+            color: var(--git);
         }
 
-        .controls {
+        .header-controls {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
+        }
+
+        .progress-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 12px 5px 5px;
+        }
+
+        .progress-ring-wrap {
+            width: 28px;
+            height: 28px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .progress-ring-wrap svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 3;
+        }
+
+        .ring-fill {
+            fill: none;
+            stroke: var(--git);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-dasharray: 69.1;
+            stroke-dashoffset: 69.1;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-pct {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
         }
 
         .speed-wrap {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-size: 12px;
-            color: var(--text-dim);
-            font-family: var(--font-mono);
+            color: var(--text-3);
+            font-family: var(--mono);
         }
 
         input[type=range] {
-            width: 85px;
-            accent-color: var(--accent);
+            width: 70px;
+            accent-color: var(--git);
             cursor: pointer;
-        }
-
-        .progress-bar {
-            width: 170px;
             height: 3px;
-            background: var(--border);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #6e40c9);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .ptext {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--text-dim);
-            min-width: 50px;
         }
 
         .btn {
-            padding: 5px 14px;
-            border: 1px solid var(--border);
-            background: var(--surface2);
-            color: var(--text);
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: var(--font-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            font-family: var(--font);
             font-size: 13px;
             font-weight: 600;
+            cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+            border-color: var(--git);
+            color: var(--git);
+            background: var(--git-pale);
         }
 
         .btn.primary {
-            background: var(--accent);
-            border-color: var(--accent);
+            background: var(--git);
+            border-color: var(--git);
             color: white;
         }
 
         .btn.primary:hover {
-            background: #d03e22;
+            background: var(--git-dark);
         }
 
-        .main {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        #graph-container {
-            flex: 1;
+        /* ─── HERO ─── */
+        .hero {
             position: relative;
-            overflow: hidden;
+            z-index: 1;
+            text-align: center;
+            padding: 64px 24px 48px;
+            max-width: 720px;
+            margin: 0 auto;
         }
 
-        #main-svg {
-            width: 100%;
-            height: 100%;
-            display: block;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--git-pale);
+            border: 1px solid rgba(240, 80, 50, 0.2);
+            color: var(--git);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 5px 14px;
+            margin-bottom: 24px;
+            font-family: var(--mono);
         }
 
-        /* Panel */
-        .panel {
-            width: 0;
+        .hero h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .hero h1 .highlight {
+            color: var(--git);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero h1 .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--git);
+            border-radius: 2px;
+            opacity: 0.3;
+        }
+
+        .hero p {
+            font-size: clamp(15px, 2.5vw, 18px);
+            color: var(--text-2);
+            line-height: 1.7;
+            max-width: 540px;
+            margin: 0 auto 32px;
+            font-weight: 300;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stat-num {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--git);
+            font-family: var(--mono);
+            letter-spacing: -1px;
+        }
+
+        .stat-lbl {
+            font-size: 12px;
+            color: var(--text-3);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ─── ROADMAP LAYOUT ─── */
+        .roadmap {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        /* Central spine line */
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, var(--border) 5%, var(--border) 95%, transparent);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        /* ─── PHASE (section group) ─── */
+        .phase {
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .phase-header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .phase-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 2px solid;
             background: var(--surface);
-            border-left: 1px solid var(--border);
-            overflow: hidden;
-            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
+            box-shadow: var(--shadow);
         }
 
-        .panel.open {
-            width: 390px;
+        .phase-icon {
+            font-size: 16px;
         }
 
-        .panel-inner {
-            width: 390px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 18px 22px 14px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+        /* ─── ROADMAP NODE ─── */
+        .rnode {
             display: flex;
             align-items: flex-start;
-            gap: 14px;
+            margin-bottom: 28px;
             position: relative;
+            z-index: 1;
+            opacity: 0;
+            transform: translateX(0) scale(0.96);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
-        .panel-icon-wrap {
-            width: 50px;
-            height: 50px;
+        .rnode.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Alternate left/right on desktop */
+        .rnode:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .rnode:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        /* Node connector dot on spine */
+        .rnode::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 22px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2.5px solid var(--border);
+            transform: translateX(-50%);
+            z-index: 3;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .rnode.visible::before {
+            border-color: var(--node-color, var(--git));
+            background: var(--node-color, var(--git));
+            box-shadow: 0 0 0 4px rgba(var(--node-rgb, 240, 80, 50), 0.15);
+        }
+
+        /* Half-width card container */
+        .rnode-half {
+            width: calc(50% - 28px);
+            flex-shrink: 0;
+        }
+
+        .rnode-spacer {
+            width: calc(50% - 28px);
+            flex-shrink: 0;
+        }
+
+        /* ─── CARD ─── */
+        .card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--c, var(--git));
+            border-radius: var(--radius) var(--radius) 0 0;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: left;
+        }
+
+        .card:hover {
+            border-color: var(--c, var(--git));
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px) scale(1.01);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            background: var(--ic-bg, #fff2ef);
+            border: 1.5px solid var(--ic-border, rgba(240, 80, 50, 0.2));
+        }
+
+        .card-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-3);
+            font-family: var(--mono);
+            font-weight: 500;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-2);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .card-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .chip {
+            font-size: 11px;
+            font-family: var(--mono);
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: var(--bg2);
+            color: var(--text-2);
+            font-weight: 500;
             border: 1px solid var(--border);
+        }
+
+        .chip.main {
+            background: var(--git-pale);
+            color: var(--git);
+            border-color: rgba(240, 80, 50, 0.2);
+        }
+
+        /* ─── CONNECTOR LINE from card to spine ─── */
+        .rnode-connector {
+            position: absolute;
+            top: 28px;
+            height: 1.5px;
+            background: linear-gradient(to right, var(--node-color, var(--border)), var(--border));
+            width: calc(50% - 28px);
+            z-index: 1;
+            transform: scaleX(0);
+            transition: transform 0.4s ease 0.2s;
+        }
+
+        .rnode.visible .rnode-connector {
+            transform: scaleX(1);
+        }
+
+        .rnode:nth-child(odd) .rnode-connector {
+            left: calc(50% + 6px);
+            transform-origin: left;
+        }
+
+        .rnode:nth-child(even) .rnode-connector {
+            right: calc(50% + 6px);
+            transform-origin: right;
+        }
+
+        /* ─── PANEL (right side drawer) ─── */
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 20, 16, 0.4);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(4px);
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: min(460px, 100vw);
+            background: var(--surface);
+            z-index: 201;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel.open {
+            transform: translateX(0);
+        }
+
+        .panel-top {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .panel-top-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 4px;
+        }
+
+        .panel-icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1.5px solid var(--border);
+            background: var(--bg2);
         }
 
         .panel-icon-wrap svg {
@@ -209,828 +622,1106 @@
             height: 30px;
         }
 
-        .panel-header-txt {
+        .panel-title-wrap {
             flex: 1;
+            min-width: 0;
         }
 
         .panel-tag {
-            font-family: var(--font-mono);
-            font-size: 9px;
-            font-weight: 600;
+            font-size: 10px;
+            font-family: var(--mono);
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 5px;
+            color: var(--text-3);
+            margin-bottom: 4px;
         }
 
         .panel-title {
-            font-size: 19px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: -0.5px;
             line-height: 1.2;
+            color: var(--text);
         }
 
-        .close-btn {
-            position: absolute;
-            top: 12px;
-            right: 14px;
-            width: 26px;
-            height: 26px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
+        .panel-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--bg2);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            color: var(--text-dim);
+            font-size: 14px;
+            color: var(--text-3);
             transition: all 0.2s;
+            flex-shrink: 0;
+            margin-top: -4px;
         }
 
-        .close-btn:hover {
-            color: var(--text);
-            border-color: var(--accent);
+        .panel-close:hover {
+            background: var(--git-pale);
+            border-color: var(--git);
+            color: var(--git);
         }
 
         .panel-body {
             flex: 1;
             overflow-y: auto;
-            padding: 18px 22px;
+            padding: 20px 24px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .panel-body::-webkit-scrollbar {
-            width: 3px;
+            width: 4px;
         }
 
         .panel-body::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 2px;
+            border-radius: 4px;
         }
 
-        .panel-section {
-            margin-bottom: 20px;
+        .psec {
+            margin-bottom: 22px;
         }
 
-        .slabel {
-            font-family: var(--font-mono);
-            font-size: 9px;
-            font-weight: 600;
+        .plabel {
+            font-size: 10px;
+            font-family: var(--mono);
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 7px;
+            color: var(--text-3);
+            margin-bottom: 8px;
         }
 
-        .stext {
-            font-size: 13.5px;
+        .ptext {
+            font-size: 14px;
             line-height: 1.75;
+            color: var(--text-2);
         }
 
-        .code-block {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 13px 15px;
-            font-family: var(--font-mono);
-            font-size: 11.5px;
+        .code-wrap {
+            background: #1a1410;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .code-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .cd1 {
+            background: #ff5f56;
+        }
+
+        .cd2 {
+            background: #ffbd2e;
+        }
+
+        .cd3 {
+            background: #27c93f;
+        }
+
+        .code-lang {
+            font-size: 10px;
+            font-family: var(--mono);
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .code-body {
+            padding: 14px 16px;
+            font-family: var(--mono);
+            font-size: 12.5px;
             line-height: 1.85;
             overflow-x: auto;
         }
 
-        .code-block .cc {
-            color: #546e7a;
+        .cl {
             display: block;
         }
 
-        .code-block .cg {
-            color: #3fb950;
-            display: block;
+        .cc {
+            color: #6a737d;
         }
 
-        .code-block .cb {
-            color: #79c0ff;
-            display: block;
+        .cg {
+            color: #85e89d;
         }
 
-        .code-block .cn {
+        .cy {
+            color: #ffab70;
+        }
+
+        .cw {
             color: #e6edf3;
-            display: block;
         }
 
-        .tip-box {
-            background: rgba(240, 80, 50, 0.07);
-            border: 1px solid rgba(240, 80, 50, 0.25);
-            border-radius: 8px;
-            padding: 11px 13px;
-            font-size: 13px;
-            line-height: 1.65;
+        .tip-wrap {
+            background: linear-gradient(135deg, #fff8f6, #fff2ef);
+            border: 1.5px solid rgba(240, 80, 50, 0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 6px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
         }
 
-        .tip-box .tl {
-            color: var(--accent);
-            font-weight: 700;
+        .tip-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
         }
 
-        .node-label {
-            font-family: 'JetBrains Mono', monospace;
-            dominant-baseline: central;
-            pointer-events: none;
-            text-anchor: middle;
+        .tip-text {
+            font-size: 13.5px;
+            line-height: 1.7;
+            color: var(--text-2);
         }
 
-        .link-line {
-            fill: none;
-            stroke-dasharray: 5, 5;
+        .tip-text strong {
+            color: var(--git);
         }
 
-        .hint {
-            position: absolute;
-            bottom: 18px;
+        /* ─── PROGRESS FOOTER ─── */
+        .progress-bar-full {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            height: 3px;
+            background: var(--border);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--git), var(--amber));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* ─── COMPLETION BANNER ─── */
+        .done-banner {
+            display: none;
+            position: fixed;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(13, 17, 23, 0.9);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 7px 16px;
-            font-size: 11.5px;
-            color: var(--text-dim);
-            pointer-events: none;
-            font-family: var(--font-mono);
+            background: var(--text);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 99;
+            gap: 8px;
+            align-items: center;
             white-space: nowrap;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .hint span {
-            color: var(--accent);
+        .done-banner.show {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 700px) {
+            .roadmap::before {
+                left: 20px;
+            }
+
+            .rnode {
+                flex-direction: row !important;
+                padding-left: 50px;
+            }
+
+            .rnode::before {
+                left: 20px;
+                top: 18px;
+            }
+
+            .rnode-half {
+                width: 100%;
+            }
+
+            .rnode-spacer {
+                display: none;
+            }
+
+            .rnode-connector {
+                display: none;
+            }
+
+            .phase-header {
+                justify-content: flex-start;
+                padding-left: 50px;
+            }
+
+            .header-controls .speed-wrap {
+                display: none;
+            }
+
+            .btn span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 40px 16px 32px;
+            }
+
+            .hero h1 {
+                letter-spacing: -1px;
+            }
+
+            .hero-stats {
+                gap: 16px;
+            }
+
+            .roadmap {
+                padding: 0 12px 80px;
+            }
+
+            .card {
+                padding: 14px 16px;
+            }
+
+            .header {
+                padding: 0 16px;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+
+        /* Git flame effect on logo */
+        @keyframes flicker {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        .logo-mark {
+            animation: flicker 3s ease-in-out infinite;
+        }
+
+        /* Card entrance */
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Shimmer on cards */
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 60%);
+            transform: translateX(-100%);
+            transition: transform 0s;
+            pointer-events: none;
+        }
+
+        .card:hover::after {
+            transform: translateX(100%);
+            transition: transform 0.5s ease;
         }
     </style>
 </head>
 
 <body>
 
-    <header>
-        <div class="logo">
-            <!-- Official Git Logo -->
-            <svg class="logo-svg" viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
-                <rect width="92" height="92" rx="10" fill="#F05032" />
-                <path
-                    d="M88.96 41.07L50.92 3.04a6.39 6.39 0 00-9.03 0l-8.97 8.97 11.38 11.38a7.57 7.57 0 019.58 9.65l10.96 10.96a7.58 7.58 0 11-4.54 4.36L49.44 37.5v29.73a7.58 7.58 0 11-6.22-.24V37.02a7.58 7.58 0 01-4.12-9.96L27.77 15.77 3.04 40.5a6.39 6.39 0 000 9.03l38.04 38.04a6.39 6.39 0 009.03 0L88.96 50.1a6.39 6.39 0 000-9.03z"
-                    fill="white" />
-            </svg>
-            <h1>Git <span>Learning</span> Guide</h1>
-        </div>
-        <div class="controls">
-            <div class="speed-wrap">Speed: <input type="range" id="speed" min="300" max="2000" value="800" step="100">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <svg class="logo-mark" viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="92" height="92" rx="16" fill="#F05032" />
+                    <path
+                        d="M88.96 41.07L50.92 3.04a6.39 6.39 0 00-9.03 0l-8.97 8.97 11.38 11.38a7.57 7.57 0 019.58 9.65l10.96 10.96a7.58 7.58 0 11-4.54 4.36L49.44 37.5v29.73a7.58 7.58 0 11-6.22-.24V37.02a7.58 7.58 0 01-4.12-9.96L27.77 15.77 3.04 40.5a6.39 6.39 0 000 9.03l38.04 38.04a6.39 6.39 0 009.03 0L88.96 50.1a6.39 6.39 0 000-9.03z"
+                        fill="white" />
+                </svg>
+                <span class="logo-text">Git <span>Roadmap</span></span>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="pfill"></div>
+            <div class="header-controls">
+                <div class="speed-wrap">
+                    <span>Speed</span>
+                    <input type="range" id="speed" min="200" max="2000" value="700" step="100">
+                </div>
+                <div class="progress-pill">
+                    <div class="progress-ring-wrap">
+                        <svg viewBox="0 0 24 24">
+                            <circle class="ring-bg" cx="12" cy="12" r="11" />
+                            <circle class="ring-fill" id="ring" cx="12" cy="12" r="11" />
+                        </svg>
+                    </div>
+                    <span class="progress-pct" id="pct">0%</span>
+                </div>
+                <button class="btn" id="pauseBtn">⏸ <span>Pause</span></button>
+                <button class="btn" id="restartBtn">↺ <span>Reset</span></button>
             </div>
-            <span class="ptext" id="ptext">0 / 0</span>
-            <button class="btn" id="restartBtn">↺ Restart</button>
-            <button class="btn primary" id="pauseBtn">⏸ Pause</button>
         </div>
     </header>
 
-    <div class="main">
-        <div id="graph-container">
-            <svg id="main-svg"></svg>
-            <div class="hint">Click any node for details &nbsp;·&nbsp; <span>Scroll</span> to zoom &nbsp;·&nbsp;
-                <span>Drag</span> to pan</div>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="live-dot"></span>
+            Interactive Roadmap
         </div>
-        <div class="panel" id="panel">
-            <div class="panel-inner">
-                <button class="close-btn" id="closePanel">✕</button>
-                <div class="panel-header">
-                    <div class="panel-icon-wrap" id="piw"></div>
-                    <div class="panel-header-txt">
-                        <div class="panel-tag" id="ptag">Git Concept</div>
-                        <div class="panel-title" id="ptitle">Select a Node</div>
-                    </div>
+        <h1>Learn <span class="highlight">Git</span> the Visual Way</h1>
+        <p>Follow the animated roadmap — from your first commit to advanced workflows. Click any card to dive deep into
+            concepts, commands &amp; pro tips.</p>
+        <div class="hero-stats">
+            <div class="stat"><span class="stat-num" id="sTotal">0</span><span class="stat-lbl">Topics</span></div>
+            <div class="stat"><span class="stat-num" id="sCmd">0</span><span class="stat-lbl">Commands</span></div>
+            <div class="stat"><span class="stat-num" id="sPhase">0</span><span class="stat-lbl">Phases</span></div>
+        </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <main class="roadmap" id="roadmap"></main>
+
+    <!-- PANEL -->
+    <div class="panel-overlay" id="overlay"></div>
+    <aside class="panel" id="panel">
+        <div class="panel-top">
+            <div class="panel-top-row">
+                <div class="panel-icon-wrap" id="pico"></div>
+                <div class="panel-title-wrap">
+                    <div class="panel-tag" id="ptag"></div>
+                    <div class="panel-title" id="ptitle"></div>
                 </div>
-                <div class="panel-body" id="pbody"></div>
+                <button class="panel-close" id="pclose">✕</button>
             </div>
         </div>
+        <div class="panel-body" id="pbody"></div>
+    </aside>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar-full">
+        <div class="progress-bar-fill" id="pbar"></div>
     </div>
+
+    <!-- DONE BANNER -->
+    <div class="done-banner" id="doneBanner">🎉 Roadmap Complete! You know Git.</div>
 
     <script>
         // ─────────────────────────────────────────────────────────────────────────────
-        // ICON LIBRARY — inline SVG per concept
+        // ICONS (inline SVG)
         // ─────────────────────────────────────────────────────────────────────────────
         const ICO = {
             git: `<svg viewBox="0 0 92 92" xmlns="http://www.w3.org/2000/svg"><rect width="92" height="92" rx="10" fill="#F05032"/><path d="M88.96 41.07L50.92 3.04a6.39 6.39 0 00-9.03 0l-8.97 8.97 11.38 11.38a7.57 7.57 0 019.58 9.65l10.96 10.96a7.58 7.58 0 11-4.54 4.36L49.44 37.5v29.73a7.58 7.58 0 11-6.22-.24V37.02a7.58 7.58 0 01-4.12-9.96L27.77 15.77 3.04 40.5a6.39 6.39 0 000 9.03l38.04 38.04a6.39 6.39 0 009.03 0L88.96 50.1a6.39 6.39 0 000-9.03z" fill="white"/></svg>`,
-
-            terminal: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1e1b4b"/><rect x="2" y="3" width="20" height="18" rx="3" stroke="#a78bfa" stroke-width="1.5"/><polyline points="6 9 10 12 6 15" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="15" x2="18" y2="15" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            download: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1e1b4b"/><path d="M12 4v10m0 0l-4-4m4 4l4-4" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18v1a2 2 0 002 2h12a2 2 0 002-2v-1" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            bookmark: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1e1b4b"/><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="#a78bfa" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
-
-            layers: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#052e16"/><polygon points="12 2 2 7 12 12 22 7" stroke="#3fb950" stroke-width="1.8" stroke-linejoin="round"/><polyline points="2 12 12 17 22 12" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="2 17 12 22 22 17" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-
-            folderPlus: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#052e16"/><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="#3fb950" stroke-width="1.8" stroke-linejoin="round"/><line x1="12" y1="11" x2="12" y2="17" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="14" x2="15" y2="14" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            plusCircle: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#052e16"/><circle cx="12" cy="12" r="9" stroke="#3fb950" stroke-width="1.8"/><line x1="12" y1="8" x2="12" y2="16" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            gitCommit: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#052e16"/><circle cx="12" cy="12" r="4" stroke="#3fb950" stroke-width="1.8"/><line x1="2" y1="12" x2="8" y2="12" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="12" x2="22" y2="12" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            info: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#052e16"/><circle cx="12" cy="12" r="9" stroke="#3fb950" stroke-width="1.8"/><circle cx="12" cy="8" r="1" fill="#3fb950"/><line x1="12" y1="11" x2="12" y2="16" stroke="#3fb950" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            gitBranch: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1c1500"/><path d="M6 3v12" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><circle cx="6" cy="18" r="3" stroke="#f59e0b" stroke-width="1.8"/><circle cx="18" cy="6" r="3" stroke="#f59e0b" stroke-width="1.8"/><path d="M6 9c0-3 3-3 6-3h3" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            swap: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1c1500"/><polyline points="17 1 21 5 17 9" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9a4 4 0 014-4h14" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><polyline points="7 23 3 19 7 15" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v2a4 4 0 01-4 4H3" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            merge: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1c1500"/><circle cx="6" cy="6" r="2.5" stroke="#f59e0b" stroke-width="1.8"/><circle cx="6" cy="18" r="2.5" stroke="#f59e0b" stroke-width="1.8"/><circle cx="18" cy="6" r="2.5" stroke="#f59e0b" stroke-width="1.8"/><line x1="6" y1="8.5" x2="6" y2="15.5" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><path d="M18 8.5Q18 14 6 15.5" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            rebase: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1c1500"/><rect x="2" y="14" width="9" height="5" rx="2" stroke="#f59e0b" stroke-width="1.8"/><rect x="2" y="5" width="9" height="5" rx="2" stroke="#f59e0b" stroke-width="1.8"/><path d="M15 7h2a2 2 0 012 2v6a2 2 0 01-2 2h-2" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/><polyline points="17 14 20 16 17 18" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-
-            github: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0d1117"/><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="#e6edf3"/></svg>`,
-
-            copy: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0d1117"/><rect x="9" y="9" width="11" height="11" rx="2" stroke="#ef4444" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            upload: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0d1117"/><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/><polyline points="17 8 12 3 7 8" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            download2: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0d1117"/><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/><polyline points="7 10 12 15 17 10" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            fork: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0d1117"/><circle cx="6" cy="5" r="2.5" stroke="#ef4444" stroke-width="1.8"/><circle cx="6" cy="19" r="2.5" stroke="#ef4444" stroke-width="1.8"/><circle cx="18" cy="5" r="2.5" stroke="#ef4444" stroke-width="1.8"/><line x1="6" y1="7.5" x2="6" y2="16.5" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/><path d="M18 7.5C18 12 12 14.5 6 16.5" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            clock: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1a0520"/><circle cx="12" cy="12" r="9" stroke="#ec4899" stroke-width="1.8"/><polyline points="12 7 12 12 15 15" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            list: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1a0520"/><line x1="8" y1="6" x2="21" y2="6" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round"/><circle cx="4" cy="6" r="1.5" fill="#ec4899"/><circle cx="4" cy="12" r="1.5" fill="#ec4899"/><circle cx="4" cy="18" r="1.5" fill="#ec4899"/></svg>`,
-
-            fileDiff: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1a0520"/><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#ec4899" stroke-width="1.8" stroke-linejoin="round"/><line x1="9" y1="12" x2="15" y2="12" stroke="#3fb950" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="15.5" x2="15" y2="15.5" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>`,
-
-            user: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1a0520"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#ec4899" stroke-width="1.8"/></svg>`,
-
-            zap: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#06b6d4" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
-
-            inbox: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" stroke="#06b6d4" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
-
-            rotCcw: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><polyline points="1 4 1 10 7 10" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-
-            undo: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><path d="M9 14L4 9l5-5" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-
-            cherry: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><circle cx="8" cy="16" r="3.5" stroke="#ef4444" stroke-width="1.8"/><circle cx="16" cy="16" r="3.5" stroke="#ef4444" stroke-width="1.8"/><path d="M8 12.5V8c0-2.5 2-4 4-4s4 1.5 4 4v0.5" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            tag: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0a1628"/><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="#06b6d4" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.5" fill="#06b6d4"/></svg>`,
-
-            network: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#120a28"/><circle cx="12" cy="5" r="2.5" stroke="#a78bfa" stroke-width="1.8"/><circle cx="5" cy="19" r="2.5" stroke="#a78bfa" stroke-width="1.8"/><circle cx="19" cy="19" r="2.5" stroke="#a78bfa" stroke-width="1.8"/><line x1="12" y1="7.5" x2="5.5" y2="16.5" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="7.5" x2="18.5" y2="16.5" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/><line x1="7.5" y1="19" x2="16.5" y2="19" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-
-            gitflowIco: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#120a28"/><circle cx="6" cy="4" r="2" stroke="#a78bfa" stroke-width="1.6"/><circle cx="6" cy="20" r="2" stroke="#a78bfa" stroke-width="1.6"/><circle cx="18" cy="4" r="2" stroke="#3fb950" stroke-width="1.6"/><circle cx="18" cy="20" r="2" stroke="#3fb950" stroke-width="1.6"/><circle cx="6" cy="12" r="2" stroke="#a78bfa" stroke-width="1.6"/><circle cx="18" cy="12" r="2" stroke="#3fb950" stroke-width="1.6"/><line x1="6" y1="6" x2="6" y2="10" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/><line x1="6" y1="14" x2="6" y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/><line x1="18" y1="6" x2="18" y2="10" stroke="#3fb950" stroke-width="1.6" stroke-linecap="round"/><line x1="18" y1="14" x2="18" y2="18" stroke="#3fb950" stroke-width="1.6" stroke-linecap="round"/><path d="M8 4h8M8 20h8" stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2,2"/></svg>`,
-
-            githubIco: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#120a28"/><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.773.004 1.551.105 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="#a78bfa"/></svg>`,
-
-            trunk: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#120a28"/><line x1="12" y1="21" x2="12" y2="6" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/><path d="M12 7C12 7 7.5 9.5 5 7" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/><path d="M12 7C12 7 16.5 9.5 19 7" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/><path d="M12 12C12 12 8.5 14 6.5 12" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/><path d="M12 12C12 12 15.5 14 17.5 12" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+            terminal: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><polyline points="4 17 10 11 4 5" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="19" x2="20" y2="19" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/></svg>`,
+            download: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><path d="M12 4v10m0 0l-4-4m4 4l4-4" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18v1a2 2 0 002 2h12a2 2 0 002-2v-1" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/></svg>`,
+            bookmark: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/></svg>`,
+            layers: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f0fdf4"/><polygon points="12 2 2 7 12 12 22 7" stroke="#22c55e" stroke-width="2" stroke-linejoin="round"/><polyline points="2 12 12 17 22 12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/><polyline points="2 17 12 22 22 17" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/></svg>`,
+            folderPlus: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f0fdf4"/><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke="#22c55e" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="11" x2="12" y2="17" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="14" x2="15" y2="14" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/></svg>`,
+            plusCircle: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f0fdf4"/><circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/></svg>`,
+            gitCommit: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f0fdf4"/><circle cx="12" cy="12" r="4" stroke="#22c55e" stroke-width="2"/><line x1="2" y1="12" x2="8" y2="12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="12" x2="22" y2="12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/></svg>`,
+            info: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f0fdf4"/><circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="2"/><circle cx="12" cy="8" r="1" fill="#22c55e"/><line x1="12" y1="11" x2="12" y2="16" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/></svg>`,
+            gitBranch: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fffbeb"/><path d="M6 3v12" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/><circle cx="6" cy="18" r="3" stroke="#f59e0b" stroke-width="2"/><circle cx="18" cy="6" r="3" stroke="#f59e0b" stroke-width="2"/><path d="M6 9c0-3 3-3 6-3h3" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>`,
+            swap: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fffbeb"/><polyline points="17 1 21 5 17 9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9a4 4 0 014-4h14" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/><polyline points="7 23 3 19 7 15" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v2a4 4 0 01-4 4H3" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>`,
+            merge: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fffbeb"/><circle cx="6" cy="6" r="2.5" stroke="#f59e0b" stroke-width="2"/><circle cx="6" cy="18" r="2.5" stroke="#f59e0b" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="#f59e0b" stroke-width="2"/><line x1="6" y1="8.5" x2="6" y2="15.5" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/><path d="M18 8.5Q18 14 6 15.5" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>`,
+            rebase: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fffbeb"/><rect x="2" y="14" width="9" height="5" rx="2" stroke="#f59e0b" stroke-width="2"/><rect x="2" y="5" width="9" height="5" rx="2" stroke="#f59e0b" stroke-width="2"/><path d="M15 7h2a2 2 0 012 2v6a2 2 0 01-2 2h-2" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/><polyline points="17 14 20 16 17 18" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            github: `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#fff2ef"/><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="#F05032"/></svg>`,
+            copy: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fff2ef"/><rect x="9" y="9" width="11" height="11" rx="2" stroke="#F05032" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="#F05032" stroke-width="2" stroke-linecap="round"/></svg>`,
+            upload: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fff2ef"/><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#F05032" stroke-width="2" stroke-linecap="round"/><polyline points="17 8 12 3 7 8" stroke="#F05032" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#F05032" stroke-width="2" stroke-linecap="round"/></svg>`,
+            download2: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fff2ef"/><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#F05032" stroke-width="2" stroke-linecap="round"/><polyline points="7 10 12 15 17 10" stroke="#F05032" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="#F05032" stroke-width="2" stroke-linecap="round"/></svg>`,
+            fork: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fff2ef"/><circle cx="6" cy="5" r="2.5" stroke="#F05032" stroke-width="2"/><circle cx="6" cy="19" r="2.5" stroke="#F05032" stroke-width="2"/><circle cx="18" cy="5" r="2.5" stroke="#F05032" stroke-width="2"/><line x1="6" y1="7.5" x2="6" y2="16.5" stroke="#F05032" stroke-width="2" stroke-linecap="round"/><path d="M18 7.5C18 12 12 14.5 6 16.5" stroke="#F05032" stroke-width="2" stroke-linecap="round"/></svg>`,
+            clock: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fdf4ff"/><circle cx="12" cy="12" r="9" stroke="#ec4899" stroke-width="2"/><polyline points="12 7 12 12 15 15" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg>`,
+            list: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fdf4ff"/><line x1="8" y1="6" x2="21" y2="6" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="6" r="1.5" fill="#ec4899"/><circle cx="4" cy="12" r="1.5" fill="#ec4899"/><circle cx="4" cy="18" r="1.5" fill="#ec4899"/></svg>`,
+            fileDiff: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fdf4ff"/><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#ec4899" stroke-width="2" stroke-linejoin="round"/><line x1="9" y1="12" x2="15" y2="12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="15.5" x2="15" y2="15.5" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>`,
+            user: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fdf4ff"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="#ec4899" stroke-width="2"/></svg>`,
+            zap: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ecfeff"/><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="#06b6d4" stroke-width="2" stroke-linejoin="round"/></svg>`,
+            inbox: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ecfeff"/><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" stroke="#06b6d4" stroke-width="2" stroke-linejoin="round"/></svg>`,
+            rotCcw: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ecfeff"/><polyline points="1 4 1 10 7 10" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            undo: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ecfeff"/><path d="M9 14L4 9l5-5" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            cherry: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#fff2ef"/><circle cx="8" cy="16" r="3.5" stroke="#F05032" stroke-width="2"/><circle cx="16" cy="16" r="3.5" stroke="#F05032" stroke-width="2"/><path d="M8 12.5V8c0-2.5 2-4 4-4s4 1.5 4 4v0.5" stroke="#F05032" stroke-width="2" stroke-linecap="round"/></svg>`,
+            tag: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ecfeff"/><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="#06b6d4" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.5" fill="#06b6d4"/></svg>`,
+            network: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><circle cx="12" cy="5" r="2.5" stroke="#7c3aed" stroke-width="2"/><circle cx="5" cy="19" r="2.5" stroke="#7c3aed" stroke-width="2"/><circle cx="19" cy="19" r="2.5" stroke="#7c3aed" stroke-width="2"/><line x1="12" y1="7.5" x2="5.5" y2="16.5" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="7.5" x2="18.5" y2="16.5" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><line x1="7.5" y1="19" x2="16.5" y2="19" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/></svg>`,
+            gitflowIco: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><circle cx="6" cy="4" r="2" stroke="#7c3aed" stroke-width="1.8"/><circle cx="6" cy="20" r="2" stroke="#7c3aed" stroke-width="1.8"/><circle cx="18" cy="4" r="2" stroke="#22c55e" stroke-width="1.8"/><circle cx="18" cy="20" r="2" stroke="#22c55e" stroke-width="1.8"/><circle cx="6" cy="12" r="2" stroke="#7c3aed" stroke-width="1.8"/><circle cx="18" cy="12" r="2" stroke="#22c55e" stroke-width="1.8"/><line x1="6" y1="6" x2="6" y2="10" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="14" x2="6" y2="18" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/><line x1="18" y1="6" x2="18" y2="10" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/><line x1="18" y1="14" x2="18" y2="18" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+            githubIco: `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.773.004 1.551.105 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="#7c3aed"/></svg>`,
+            trunk: `<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#f3f0ff"/><line x1="12" y1="21" x2="12" y2="6" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/><path d="M12 7C12 7 7.5 9.5 5 7" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><path d="M12 7C12 7 16.5 9.5 19 7" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 8.5 14 6.5 12" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 15.5 14 17.5 12" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/></svg>`,
         };
 
         // ─────────────────────────────────────────────────────────────────────────────
         // DATA
         // ─────────────────────────────────────────────────────────────────────────────
-        const DATA = {
-            id: "root", label: "Git", ico: "git", color: "#f05032",
-            info: {
-                tag: "Version Control System", title: "Git",
-                def: "Git is a free, open-source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.",
-                desc: "Created by Linus Torvalds in 2005 for Linux kernel development, Git tracks changes in source code. Every developer has a full local copy of the entire repo history — making operations fast and collaboration seamless.",
-                cmds: [], tip: "Git is the de facto standard for version control. Learning Git is one of the most valuable skills for any developer."
+        const PHASES = [
+            {
+                id: "setup", label: "Phase 1 — Setup", icon: "⚙️", color: "#7c3aed", rgb: "124,58,237",
+                nodes: [
+                    {
+                        id: "git-intro", label: "What is Git?", sub: "Version Control", ico: "git",
+                        desc: "Git is a distributed version control system that tracks changes in your files, enabling collaboration and history. Created by Linus Torvalds in 2005.",
+                        chips: ["VCS", "Distributed", "Open Source"],
+                        info: {
+                            tag: "Foundation", title: "What is Git?",
+                            def: "Git is a free, open-source distributed version control system designed to handle everything from small to very large projects.",
+                            full: "Every developer has a complete local copy of the repository, including its full history. This makes most operations fast and allows working offline. Git forms the backbone of modern software development workflows.",
+                            cmds: [], tip: "Git is the de facto standard for version control. Learning it is one of the most valuable investments as a developer."
+                        }
+                    },
+                    {
+                        id: "install", label: "Installation", sub: "git --version", ico: "download",
+                        desc: "Install Git on your OS via package manager or the official installer at git-scm.com. Verify with git --version.",
+                        chips: ["macOS", "Windows", "Linux"],
+                        info: {
+                            tag: "Setup", title: "Installing Git",
+                            def: "Git is available on all major operating systems and can be installed in minutes.",
+                            full: "Use your OS package manager or download directly from git-scm.com. After installation, verify it works with git --version. On macOS, Xcode Command Line Tools also installs Git.",
+                            cmds: ["# macOS — via Homebrew", "brew install git", "", "# Ubuntu / Debian", "sudo apt install git", "", "# Verify installation", "git --version"],
+                            tip: "On macOS, run xcode-select --install to get Git via Apple's developer tools — no extra download needed."
+                        }
+                    },
+                    {
+                        id: "config", label: "Configuration", sub: "git config", ico: "terminal",
+                        desc: "Set your name and email before making any commits. This identity is embedded in every commit permanently.",
+                        chips: ["Identity", "Editor", "Defaults"],
+                        info: {
+                            tag: "Setup", title: "Git Configuration",
+                            def: "Configure Git with your identity and preferences before making your first commit.",
+                            full: "Git embeds your name and email in every commit. Use --global for machine-wide settings, or omit it inside a repo for project-specific config.",
+                            cmds: ['git config --global user.name "Your Name"', 'git config --global user.email "you@example.com"', 'git config --global core.editor vim', 'git config --global init.defaultBranch main', 'git config --list   # view all settings'],
+                            tip: "Set init.defaultBranch to 'main' to align with modern conventions and platforms like GitHub."
+                        }
+                    },
+                    {
+                        id: "aliases", label: "Git Aliases", sub: "git config alias.*", ico: "bookmark",
+                        desc: "Create shortcuts for frequently used commands. Save time with custom aliases like 'git st' for 'git status'.",
+                        chips: ["Productivity", "Shortcuts"],
+                        info: {
+                            tag: "Setup", title: "Git Aliases",
+                            def: "Aliases are custom shortcuts for Git commands that dramatically improve your workflow speed.",
+                            full: "Power users rely heavily on aliases. You can alias any Git command and even chain multiple commands. Stored in your global .gitconfig file.",
+                            cmds: ["git config --global alias.st status", "git config --global alias.co checkout", "git config --global alias.br branch", 'git config --global alias.lg "log --oneline --graph --decorate --all"', "", "# Then use them:", "git st   # = git status", "git lg   # beautiful branch graph"],
+                            tip: "The alias.lg command above is incredibly useful — gives you a compact, visual git log. Add it on every machine you use."
+                        }
+                    }
+                ]
             },
-            ch: [
-                {
-                    id: "setup", label: "Setup & Config", ico: "terminal", color: "#a78bfa",
-                    info: {
-                        tag: "Getting Started", title: "Setup & Config",
-                        def: "Initial configuration of Git including user identity, editor preferences, and global settings.",
-                        desc: "Before using Git, configure your identity. This info is embedded in every commit, creating an audit trail of your work.",
-                        cmds: ["git config --global user.name \"Your Name\"", "git config --global user.email \"you@example.com\"", "git config --global core.editor vim", "git config --list   # view all settings"],
-                        tip: "Use --global for machine-wide settings. Omit --global inside a repo to set project-specific config that overrides global settings."
-                    },
-                    ch: [
-                        {
-                            id: "install", label: "Installation", ico: "download", color: "#a78bfa",
-                            info: {
-                                tag: "Setup", title: "Installing Git",
-                                def: "Git installation varies by OS. Available on Windows, macOS, and Linux.",
-                                desc: "Install via package managers or official installers. After installation, verify with git --version.",
-                                cmds: ["# macOS\nbrew install git", "# Ubuntu/Debian\napt install git", "# Windows: git-scm.com/download", "git --version   # verify"],
-                                tip: "On macOS, installing Xcode Command Line Tools also installs Git. Run: xcode-select --install"
-                            }, ch: []
-                        },
-                        {
-                            id: "aliases", label: "Aliases", ico: "bookmark", color: "#a78bfa",
-                            info: {
-                                tag: "Setup", title: "Git Aliases",
-                                def: "Shortcuts for frequently used Git commands, reducing typing and improving workflow.",
-                                desc: "Aliases let you create custom short commands. Power users rely on them heavily to speed up workflows.",
-                                cmds: ["git config --global alias.st status", "git config --global alias.co checkout", "git config --global alias.br branch", "git config --global alias.lg \"log --oneline --graph\""],
-                                tip: "After setting alias.st, you can type 'git st' instead of 'git status'. Massive time-saver!"
-                            }, ch: []
+            {
+                id: "basics", label: "Phase 2 — Core Basics", icon: "🌱", color: "#22c55e", rgb: "34,197,94",
+                nodes: [
+                    {
+                        id: "init", label: "git init", sub: "Initialize a Repo", ico: "folderPlus",
+                        desc: "Create a new Git repository in your project folder. This creates a hidden .git directory that tracks everything.",
+                        chips: ["Start Here", "Repository"],
+                        info: {
+                            tag: "Command", title: "git init",
+                            def: "Initializes a new empty Git repository or reinitializes an existing one in the current directory.",
+                            full: "Running git init creates a .git directory with all the metadata Git needs. The .git folder is the repository — everything else is your working directory. Never delete or manually edit .git.",
+                            cmds: ["git init              # init in current folder", "git init my-project   # init in a new folder", "ls -la .git/          # see what's inside", "", "# .git contains:", "# HEAD, config, objects/, refs/"],
+                            tip: "The .git folder IS the repository. If you copy it elsewhere, you have a complete copy of the entire project history."
                         }
-                    ]
-                },
-                {
-                    id: "basics", label: "Core Basics", ico: "layers", color: "#3fb950",
-                    info: {
-                        tag: "Foundation", title: "Core Git Basics",
-                        def: "Fundamental operations that form the backbone of day-to-day Git usage.",
-                        desc: "These commands cover initializing repos, staging files, committing changes, and understanding the three-tree architecture: Working Directory → Staging Area → Repository.",
-                        cmds: [], tip: "Master these commands first. Everything else in Git builds on this foundation."
                     },
-                    ch: [
-                        {
-                            id: "init", label: "git init", ico: "folderPlus", color: "#3fb950",
-                            info: {
-                                tag: "Command", title: "git init",
-                                def: "Creates a new empty Git repository or reinitializes an existing one.",
-                                desc: "Running git init creates a hidden .git directory containing all the metadata Git needs. Always the first step when starting a new project.",
-                                cmds: ["git init             # init in current dir", "git init my-project  # init in new folder", "ls -la .git/         # see what's inside"],
-                                tip: "The .git folder is sacred — never manually edit files inside it unless you know exactly what you're doing."
-                            }, ch: []
-                        },
-                        {
-                            id: "add", label: "git add", ico: "plusCircle", color: "#3fb950",
-                            info: {
-                                tag: "Command", title: "git add",
-                                def: "Stages file changes, moving them from the working directory to the staging area (index).",
-                                desc: "Before committing, stage your changes. The staging area lets you craft precise commits by choosing exactly which changes to include.",
-                                cmds: ["git add file.txt       # stage one file", "git add .              # stage all changes", "git add -p             # interactive staging", "git add src/           # stage a directory"],
-                                tip: "git add -p (patch mode) lets you stage individual hunks within a file — perfect for keeping commits atomic."
-                            }, ch: []
-                        },
-                        {
-                            id: "commit", label: "git commit", ico: "gitCommit", color: "#3fb950",
-                            info: {
-                                tag: "Command", title: "git commit",
-                                def: "Records staged changes as a new permanent snapshot in the repository history.",
-                                desc: "A commit is a permanent snapshot of your staged changes with a unique SHA-1 hash, author info, timestamp, and message.",
-                                cmds: ["git commit -m \"feat: add login form\"", "git commit -am \"fix: typo\"  # add+commit tracked", "git commit --amend     # modify last commit", "git commit --no-verify # skip pre-commit hooks"],
-                                tip: "Write commit messages in imperative mood: 'Add feature' not 'Added feature'. Follow Conventional Commits for team projects."
-                            }, ch: []
-                        },
-                        {
-                            id: "status", label: "git status", ico: "info", color: "#3fb950",
-                            info: {
-                                tag: "Command", title: "git status",
-                                def: "Displays the state of the working directory and staging area.",
-                                desc: "Shows which changes are staged, unstaged, and untracked. Run this frequently to understand where you are in your workflow.",
-                                cmds: ["git status          # full status", "git status -s       # short format", "git status -sb      # short + branch info"],
-                                tip: "Run git status constantly — it's free and shows exactly what's happening. Think of it as your Git compass."
-                            }, ch: []
+                    {
+                        id: "add", label: "git add", sub: "Stage Changes", ico: "plusCircle",
+                        desc: "Move changes from your working directory to the staging area. You choose exactly what goes into the next commit.",
+                        chips: ["Staging", "Index", "Selective"],
+                        info: {
+                            tag: "Command", title: "git add",
+                            def: "Stages file changes, moving them from the working directory to the staging area (index) for the next commit.",
+                            full: "The staging area is Git's draft area. You can stage individual files, directories, or even specific lines within files using -p (patch mode). This lets you craft precise, atomic commits.",
+                            cmds: ["git add file.txt        # stage one file", "git add .               # stage all changes", "git add src/            # stage a directory", "git add -p              # interactive hunk staging", "git add *.js            # stage by pattern"],
+                            tip: "git add -p is a superpower — it lets you review each change and choose exactly what to stage. Perfect for keeping commits focused."
                         }
-                    ]
-                },
-                {
-                    id: "branching", label: "Branching", ico: "gitBranch", color: "#f59e0b",
-                    info: {
-                        tag: "Core Feature", title: "Git Branching",
-                        def: "Branches are lightweight, movable pointers to specific commits, enabling parallel development workflows.",
-                        desc: "Git's branching model is its killer feature. Branches are nearly instant to create and cheap to merge, letting teams work on features, bugs, and experiments in isolation.",
-                        cmds: [], tip: "Branch early, branch often. Git branches are so lightweight there's no reason not to create one for every feature or fix."
                     },
-                    ch: [
-                        {
-                            id: "branch", label: "git branch", ico: "gitBranch", color: "#f59e0b",
-                            info: {
-                                tag: "Command", title: "git branch",
-                                def: "Lists, creates, renames, or deletes branches.",
-                                desc: "The git branch command is your branch manager. Use it to see where you are, create new branches, or clean up old ones after merging.",
-                                cmds: ["git branch             # list local branches", "git branch -a          # list all (incl. remote)", "git branch feature/nav # create new branch", "git branch -d old-feat # delete merged branch", "git branch -m new-name # rename current branch"],
-                                tip: "Use descriptive names like feature/user-auth or fix/login-bug. Many teams enforce naming conventions via branch protection rules."
-                            }, ch: []
-                        },
-                        {
-                            id: "checkout", label: "git checkout", ico: "swap", color: "#f59e0b",
-                            info: {
-                                tag: "Command", title: "git checkout / switch",
-                                def: "Switches between branches or restores working tree files.",
-                                desc: "git checkout is the classic command for switching branches. Modern Git (2.23+) introduced git switch for branch switching and git restore for file restoration.",
-                                cmds: ["git checkout main           # switch to main", "git checkout -b feature/x  # create & switch", "git switch feature/x       # modern syntax", "git switch -c new-branch   # create & switch (modern)", "git checkout -- file.txt   # discard file changes"],
-                                tip: "Prefer git switch and git restore in newer Git versions — they're less ambiguous and safer than the overloaded git checkout."
-                            }, ch: []
-                        },
-                        {
-                            id: "merge", label: "git merge", ico: "merge", color: "#f59e0b",
-                            info: {
-                                tag: "Command", title: "git merge",
-                                def: "Integrates changes from one branch into the current branch.",
-                                desc: "Merging combines histories of two branches. Git performs a fast-forward merge when possible, otherwise creates a merge commit to record the joining.",
-                                cmds: ["git merge feature/nav          # merge into current", "git merge --no-ff feature/nav  # always create merge commit", "git merge --squash feature/nav # squash all commits", "git merge --abort              # cancel in-progress merge"],
-                                tip: "Use --no-ff (no fast-forward) to preserve branch history and make it clear when a feature was developed. Many teams enforce this."
-                            }, ch: []
-                        },
-                        {
-                            id: "rebase", label: "git rebase", ico: "rebase", color: "#f59e0b",
-                            info: {
-                                tag: "Command", title: "git rebase",
-                                def: "Reapplies commits on top of another base, creating a linear history.",
-                                desc: "Rebase moves commits from your branch onto another base, creating cleaner linear history. Rewrites commit SHAs — never rebase public/shared branches.",
-                                cmds: ["git rebase main              # rebase onto main", "git rebase -i HEAD~3         # interactive rebase", "git rebase --continue        # after resolving conflicts", "git rebase --abort           # undo the rebase"],
-                                tip: "The Golden Rule: Never rebase commits pushed to a shared repository. Only rebase your local, private branches."
-                            }, ch: []
+                    {
+                        id: "commit", label: "git commit", sub: "Save a Snapshot", ico: "gitCommit",
+                        desc: "Record your staged changes as a permanent snapshot in the repository history with a descriptive message.",
+                        chips: ["Snapshot", "SHA-1", "Message"],
+                        info: {
+                            tag: "Command", title: "git commit",
+                            def: "Records staged changes as a new, permanent snapshot in the repository. Each commit gets a unique SHA-1 hash.",
+                            full: "A commit captures a point-in-time snapshot of your staged files. It includes: the tree (file state), parent commit(s), author info, timestamp, and message. Commits are immutable — they can never be changed.",
+                            cmds: ['git commit -m "feat: add login form"', 'git commit -am "fix: correct typo"  # add+commit tracked files', 'git commit --amend      # modify last commit', "git commit --no-verify  # skip pre-commit hooks", 'git commit -m "fix: bug" --allow-empty'],
+                            tip: "Write commit messages in imperative mood: 'Add feature' not 'Added feature'. Follow Conventional Commits (feat:, fix:, docs:) for clear history."
                         }
-                    ]
-                },
-                {
-                    id: "remote", label: "Remote & Collab", ico: "github", color: "#ef4444",
-                    info: {
-                        tag: "Collaboration", title: "Remote Repositories",
-                        def: "Remote repositories are versions of your project hosted on a server, enabling team collaboration.",
-                        desc: "Remotes like GitHub, GitLab, Bitbucket are shared central repos where teams push and pull changes. They enable distributed workflows, code review, and CI/CD integration.",
-                        cmds: [], tip: "'origin' is just a conventional name for your main remote. You can have multiple remotes — useful for forking workflows."
                     },
-                    ch: [
-                        {
-                            id: "clone", label: "git clone", ico: "copy", color: "#ef4444",
-                            info: {
-                                tag: "Command", title: "git clone",
-                                def: "Creates a local copy of a remote repository, including all history.",
-                                desc: "Clone downloads the entire repository — all branches, tags, and history — to your machine and sets up 'origin' automatically.",
-                                cmds: ["git clone https://github.com/user/repo.git", "git clone repo.git my-folder   # custom folder", "git clone --depth 1 repo.git   # shallow clone", "git clone --branch dev repo.git # specific branch"],
-                                tip: "Use --depth 1 for large repos when you only need the latest state. Much faster — CI/CD pipelines love this."
-                            }, ch: []
-                        },
-                        {
-                            id: "push", label: "git push", ico: "upload", color: "#ef4444",
-                            info: {
-                                tag: "Command", title: "git push",
-                                def: "Uploads local branch commits to the remote repository.",
-                                desc: "Push sends committed changes to the remote, making them available to your team. First push requires -u to set upstream tracking.",
-                                cmds: ["git push origin main           # push to main", "git push -u origin feature/x  # first push", "git push --force-with-lease   # safer force push", "git push --tags               # push tags", "git push origin :old-branch   # delete remote branch"],
-                                tip: "Never use git push --force on shared branches. Use --force-with-lease — it checks no one else has pushed since you last fetched."
-                            }, ch: []
-                        },
-                        {
-                            id: "pull", label: "git pull", ico: "download2", color: "#ef4444",
-                            info: {
-                                tag: "Command", title: "git pull",
-                                def: "Fetches changes from the remote and merges them into the current branch.",
-                                desc: "git pull = git fetch + git merge. Updates your local branch to match the remote. Use git fetch first if you want to review changes before merging.",
-                                cmds: ["git pull                    # pull current branch", "git pull origin main        # specific remote/branch", "git pull --rebase           # pull with rebase", "git fetch && git log FETCH_HEAD # inspect first"],
-                                tip: "git pull --rebase keeps history cleaner by avoiding unnecessary merge commits. Configure default: git config pull.rebase true"
-                            }, ch: []
-                        },
-                        {
-                            id: "fork-pr", label: "Fork & PR", ico: "fork", color: "#ef4444",
-                            info: {
-                                tag: "Workflow", title: "Fork & Pull Request",
-                                def: "Fork creates your own server-side copy. A PR proposes merging your changes into the original repo.",
-                                desc: "The standard for open-source contribution: Fork → clone → branch → commit → push → open PR. Maintainers review and merge.",
-                                cmds: ["# Fork on GitHub UI, then:", "git clone https://github.com/YOU/repo.git", "git remote add upstream https://github.com/ORIG/repo.git", "git fetch upstream", "git merge upstream/main  # sync with original"],
-                                tip: "Always work on a feature branch in your fork, never directly on main. Keeps your fork clean and in sync with upstream."
-                            }, ch: []
+                    {
+                        id: "status", label: "git status", sub: "What's happening?", ico: "info",
+                        desc: "See which files are staged, modified, or untracked. Your most-used command — run it constantly.",
+                        chips: ["Inspect", "State", "Workflow"],
+                        info: {
+                            tag: "Command", title: "git status",
+                            def: "Displays the state of the working directory and staging area, showing what's staged, modified, or untracked.",
+                            full: "git status is your Git compass. It tells you exactly where you are and what's changed. The short form (-s) is compact and great once you're comfortable reading it.",
+                            cmds: ["git status            # detailed status", "git status -s         # short format (M, A, ??)", "git status -sb        # short + current branch", "", "# Status flags (-s):", "# M = modified, A = added, D = deleted", "# ?? = untracked, !! = ignored"],
+                            tip: "Run git status constantly — before and after every command when learning. It's free and always accurate."
                         }
-                    ]
-                },
-                {
-                    id: "history", label: "History & Logs", ico: "clock", color: "#ec4899",
-                    info: {
-                        tag: "Inspection", title: "History & Logs",
-                        def: "Commands for exploring commit history, understanding changes, and tracing the evolution of your codebase.",
-                        desc: "Git stores complete project history. These commands let you navigate that history, compare changes, find who changed what, and search through past commits.",
-                        cmds: [], tip: "Understanding your repo's history is as important as making changes. Invest time in git log and git diff."
                     },
-                    ch: [
-                        {
-                            id: "log", label: "git log", ico: "list", color: "#ec4899",
-                            info: {
-                                tag: "Command", title: "git log",
-                                def: "Shows the commit history for the current branch.",
-                                desc: "git log has many formatting options. With the right flags, it becomes an incredibly powerful tool for understanding project history.",
-                                cmds: ["git log                         # full log", "git log --oneline --graph       # visual tree", "git log --author=\"Alice\"        # filter by author", "git log --since=\"2024-01-01\"   # filter by date", "git log -p file.txt             # changes to a file"],
-                                tip: "Create an alias: git config --global alias.lg 'log --oneline --graph --decorate --all' — beautiful branch graph in the terminal."
-                            }, ch: []
-                        },
-                        {
-                            id: "diff", label: "git diff", ico: "fileDiff", color: "#ec4899",
-                            info: {
-                                tag: "Command", title: "git diff",
-                                def: "Shows differences between commits, branches, the working tree, and the staging area.",
-                                desc: "git diff is your window into exactly what changed — working vs staged, staged vs committed, or any two commits/branches.",
-                                cmds: ["git diff              # unstaged changes", "git diff --staged     # staged vs last commit", "git diff main..feat   # branch comparison", "git diff HEAD~1 HEAD  # last two commits", "git diff --stat       # summary of changes"],
-                                tip: "Use git diff --word-diff for word-level highlighting — much more readable for prose or config files."
-                            }, ch: []
-                        },
-                        {
-                            id: "blame", label: "git blame", ico: "user", color: "#ec4899",
-                            info: {
-                                tag: "Command", title: "git blame",
-                                def: "Shows what revision and author last modified each line of a file.",
-                                desc: "git blame annotates every line with the commit and author that last changed it. Essential for understanding why code exists.",
-                                cmds: ["git blame file.txt           # annotate file", "git blame -L 10,20 file.txt  # specific lines", "git blame -w file.txt        # ignore whitespace"],
-                                tip: "Don't use git blame to assign fault — use it to understand context. The last person to touch a line isn't always responsible for the original design."
-                            }, ch: []
+                    {
+                        id: "log", label: "git log", sub: "Browse History", ico: "list",
+                        desc: "Explore the commit history. See what changed, when, and by whom. Customize the output with powerful flags.",
+                        chips: ["History", "SHA", "Timeline"],
+                        info: {
+                            tag: "Command", title: "git log",
+                            def: "Shows the commit history for the current branch with author, date, and message for each commit.",
+                            full: "git log has dozens of formatting options. The --oneline --graph combination gives you a compact visual branch history that's incredibly useful for understanding project structure.",
+                            cmds: ["git log                          # full log", "git log --oneline --graph        # compact tree view", "git log --author=\"Alice\"         # filter by author", "git log --since=\"2024-01-01\"    # filter by date", "git log -p file.txt              # changes to a file", "git log --stat                   # files changed per commit"],
+                            tip: "Create an alias: git config --global alias.lg 'log --oneline --graph --decorate --all' — gives you a beautiful visual history in any repo."
                         }
-                    ]
-                },
-                {
-                    id: "advanced", label: "Advanced", ico: "zap", color: "#06b6d4",
-                    info: {
-                        tag: "Power User", title: "Advanced Git",
-                        def: "Powerful commands for complex scenarios: undoing mistakes, saving work-in-progress, tagging releases, and more.",
-                        desc: "Once comfortable with basics, these commands dramatically expand your capabilities for emergency fixes, release management, and recovering from mistakes.",
-                        cmds: [], tip: "These commands are powerful but some are dangerous. Always understand what a command does before running it on a shared branch."
                     },
-                    ch: [
-                        {
-                            id: "stash", label: "git stash", ico: "inbox", color: "#06b6d4",
-                            info: {
-                                tag: "Command", title: "git stash",
-                                def: "Temporarily shelves uncommitted changes so you can work on something else.",
-                                desc: "Stash is perfect when you need to switch branches but aren't ready to commit. Saves your dirty working directory onto a stack.",
-                                cmds: ["git stash                    # stash changes", "git stash push -m \"WIP nav\" # named stash", "git stash list               # see all stashes", "git stash pop                # apply + remove last", "git stash apply stash@{1}   # apply specific stash"],
-                                tip: "By default stash doesn't save untracked files. Use git stash -u (--include-untracked) to stash everything."
-                            }, ch: []
-                        },
-                        {
-                            id: "reset", label: "git reset", ico: "rotCcw", color: "#06b6d4",
-                            info: {
-                                tag: "Command", title: "git reset",
-                                def: "Moves the current branch pointer, optionally modifying the staging area and working directory.",
-                                desc: "git reset has three modes: --soft (keeps changes staged), --mixed (unstages changes, default), --hard (discards all changes).",
-                                cmds: ["git reset HEAD~1          # undo last commit (keep changes)", "git reset --soft HEAD~1   # undo commit, keep staged", "git reset --hard HEAD~1   # undo commit, discard changes", "git reset HEAD file.txt   # unstage a file"],
-                                tip: "Never use git reset --hard without being 100% sure. Discarded changes cannot be recovered easily. Consider git revert for public commits."
-                            }, ch: []
-                        },
-                        {
-                            id: "revert", label: "git revert", ico: "undo", color: "#06b6d4",
-                            info: {
-                                tag: "Command", title: "git revert",
-                                def: "Creates a new commit that undoes the changes from a previous commit, preserving history.",
-                                desc: "Unlike reset, revert is safe for public branches. It creates a new 'undo' commit rather than erasing history.",
-                                cmds: ["git revert HEAD           # revert last commit", "git revert abc123         # revert specific commit", "git revert HEAD~3..HEAD   # revert last 3 commits", "git revert --no-commit HEAD # stage without committing"],
-                                tip: "Use git revert for shared branches. Use git reset only for local, unpushed commits. One of the most important Git rules."
-                            }, ch: []
-                        },
-                        {
-                            id: "cherry-pick", label: "cherry-pick", ico: "cherry", color: "#06b6d4",
-                            info: {
-                                tag: "Command", title: "git cherry-pick",
-                                def: "Applies the changes from a specific commit onto the current branch.",
-                                desc: "Cherry-pick copies individual commits from one branch to another without merging the entire branch. Useful for hotfixes across release branches.",
-                                cmds: ["git cherry-pick abc123          # apply one commit", "git cherry-pick abc123..def456  # range of commits", "git cherry-pick -n abc123       # stage without committing", "git cherry-pick --continue      # after conflict resolution"],
-                                tip: "Cherry-picking creates new commits with different SHAs. If you cherry-pick many commits, consider merge or rebase instead."
-                            }, ch: []
-                        },
-                        {
-                            id: "tags", label: "git tag", ico: "tag", color: "#06b6d4",
-                            info: {
-                                tag: "Command", title: "git tag",
-                                def: "Creates, lists, or deletes tags — permanent labels for specific commits used for release versions.",
-                                desc: "Tags mark important points in history, especially releases. Annotated tags include metadata (author, date, message) and are recommended.",
-                                cmds: ["git tag                        # list tags", "git tag v1.0.0                 # lightweight tag", "git tag -a v1.0.0 -m \"Release\" # annotated tag", "git push origin v1.0.0         # push specific tag", "git push origin --tags         # push all tags"],
-                                tip: "Follow Semantic Versioning (semver): MAJOR.MINOR.PATCH. Breaking changes → major, new features → minor, bug fixes → patch."
-                            }, ch: []
+                    {
+                        id: "diff", label: "git diff", sub: "See Changes", ico: "fileDiff",
+                        desc: "Compare changes between commits, branches, or the working tree vs staging area. See exactly what changed line by line.",
+                        chips: ["Compare", "Diff", "Lines"],
+                        info: {
+                            tag: "Command", title: "git diff",
+                            def: "Shows line-by-line differences between the working directory, staging area, and commits.",
+                            full: "git diff is your window into what changed. It shows red (removed) and green (added) lines. Use --staged to see what's about to be committed, or compare any two commits or branches.",
+                            cmds: ["git diff                # working dir vs staged", "git diff --staged       # staged vs last commit", "git diff main..feature  # between branches", "git diff HEAD~1 HEAD    # last two commits", "git diff --stat         # summary (files changed)", "git diff --word-diff    # word-level diff"],
+                            tip: "git diff --word-diff highlights changes at the word level, not the whole line — much more readable for prose, config files, or minor edits."
                         }
-                    ]
-                },
-                {
-                    id: "workflows", label: "Workflows", ico: "network", color: "#a78bfa",
-                    info: {
-                        tag: "Team Practice", title: "Git Workflows",
-                        def: "Established patterns for how teams use Git to collaborate on software development.",
-                        desc: "Different teams adopt different branching strategies. Choosing the right workflow depends on release cadence, team size, and deployment practices.",
-                        cmds: [], tip: "The best workflow is the one your team consistently follows. Consistency matters more than which specific workflow you choose."
+                    }
+                ]
+            },
+            {
+                id: "branching", label: "Phase 3 — Branching", icon: "🌿", color: "#f59e0b", rgb: "245,158,11",
+                nodes: [
+                    {
+                        id: "branch", label: "git branch", sub: "Manage Branches", ico: "gitBranch",
+                        desc: "Create, list, rename, and delete branches. Branches are just pointers to commits — lightweight and fast.",
+                        chips: ["Pointer", "HEAD", "Lightweight"],
+                        info: {
+                            tag: "Command", title: "git branch",
+                            def: "Lists existing branches, or creates, renames, and deletes branches.",
+                            full: "A branch is simply a named pointer to a commit. Creating a branch is almost instant because Git just writes a 41-byte file. HEAD points to the currently checked-out branch.",
+                            cmds: ["git branch                 # list local branches", "git branch -a              # list all (incl. remote)", "git branch feature/nav     # create new branch", "git branch -d feature/nav  # delete (safe — merged only)", "git branch -D feature/nav  # force delete", "git branch -m new-name     # rename current branch"],
+                            tip: "Use descriptive names like feature/user-auth or fix/login-bug. Many teams use prefixes: feat/, fix/, chore/, release/"
+                        }
                     },
-                    ch: [
-                        {
-                            id: "gitflow", label: "Git Flow", ico: "gitflowIco", color: "#a78bfa",
-                            info: {
-                                tag: "Workflow", title: "Git Flow",
-                                def: "A strict branching model with dedicated branches for features, releases, and hotfixes.",
-                                desc: "Uses main (production), develop (integration), feature/*, release/*, and hotfix/* branches. Great for scheduled release cycles.",
-                                cmds: ["# Main branches: main, develop", "# Supporting: feature/*, release/*, hotfix/*", "git checkout -b feature/x develop  # start feature", "git checkout -b release/1.0 develop # prepare release", "git checkout -b hotfix/bug main     # urgent fix"],
-                                tip: "Git Flow is powerful for versioned software but overkill for apps with continuous deployment. Consider GitHub Flow for those cases."
-                            }, ch: []
-                        },
-                        {
-                            id: "github-flow", label: "GitHub Flow", ico: "githubIco", color: "#a78bfa",
-                            info: {
-                                tag: "Workflow", title: "GitHub Flow",
-                                def: "A simple, lightweight workflow built around a single main branch and short-lived feature branches with pull requests.",
-                                desc: "Anything in main is deployable → create descriptive feature branch → commit often → open PR → review → deploy → merge. Perfect for continuous delivery.",
-                                cmds: ["git checkout -b feature/add-auth  # branch from main", "# make commits...", "git push -u origin feature/add-auth", "# Open Pull Request on GitHub", "# Review → Deploy → Merge → Delete branch"],
-                                tip: "GitHub Flow's simplicity is its power. With good CI/CD and branch protection rules, it scales well even for large teams."
-                            }, ch: []
-                        },
-                        {
-                            id: "trunk", label: "Trunk Based", ico: "trunk", color: "#a78bfa",
-                            info: {
-                                tag: "Workflow", title: "Trunk-Based Development",
-                                def: "All developers commit directly to a single shared branch (trunk/main), with short-lived feature branches if needed.",
-                                desc: "TBD reduces merge conflicts by integrating code frequently. Feature flags hide incomplete work in production. Used by Google, Facebook, and Netflix at scale.",
-                                cmds: ["# Everyone commits to main (or very short-lived branches)", "git checkout -b feature/x  # max 1-2 days", "git push origin main       # frequent small pushes", "# Feature flags control visibility in production"],
-                                tip: "Trunk-based development requires strong CI/CD and a culture of small, frequent commits. It virtually eliminates merge hell but requires discipline."
-                            }, ch: []
+                    {
+                        id: "checkout", label: "git switch", sub: "Switch Branches", ico: "swap",
+                        desc: "Switch to a different branch or create and switch in one command. Modern Git uses 'git switch' for clarity.",
+                        chips: ["Navigate", "Detached HEAD"],
+                        info: {
+                            tag: "Command", title: "git switch / checkout",
+                            def: "Switch to a different branch (or create one). Modern Git splits this into git switch (branches) and git restore (files).",
+                            full: "git checkout was overloaded with too many functions. Git 2.23+ introduced git switch for branch operations and git restore for file operations, making the intent explicit and reducing mistakes.",
+                            cmds: ["git switch main              # switch to main", "git switch -c feature/x      # create & switch (new)", "git checkout feature/x       # classic syntax", "git checkout -b feature/x    # classic create & switch", "git switch -                 # back to previous branch", "git restore file.txt         # discard file changes"],
+                            tip: "Use git switch in modern Git (2.23+). It's clearer and prevents accidents like accidentally creating detached HEAD state."
                         }
-                    ]
-                }
-            ]
-        };
+                    },
+                    {
+                        id: "merge", label: "git merge", sub: "Combine Branches", ico: "merge",
+                        desc: "Integrate changes from one branch into another. Git will fast-forward if possible, or create a merge commit.",
+                        chips: ["Fast-forward", "Merge Commit", "Conflict"],
+                        info: {
+                            tag: "Command", title: "git merge",
+                            def: "Integrates changes from one branch into the current branch, preserving branch history.",
+                            full: "Git tries to fast-forward (just move the pointer) when the target branch hasn't diverged. If both branches have new commits, Git creates a merge commit. Conflicts occur when the same lines are changed differently.",
+                            cmds: ["git merge feature/nav            # merge into current", "git merge --no-ff feature/nav    # always create merge commit", "git merge --squash feature/nav   # one commit for the whole branch", "git merge --abort                # cancel if conflicted", "", "# Resolve conflicts, then:", "git add .  &&  git commit"],
+                            tip: "Use --no-ff (no fast-forward) to preserve branch topology in history. Makes it visually clear when a feature branch was merged."
+                        }
+                    },
+                    {
+                        id: "rebase", label: "git rebase", sub: "Linear History", ico: "rebase",
+                        desc: "Reapply your commits on top of another branch, creating a clean, linear history without merge commits.",
+                        chips: ["Linear", "Rewrite", "Interactive"],
+                        info: {
+                            tag: "Command", title: "git rebase",
+                            def: "Reapplies commits from the current branch on top of another base commit, rewriting commit history.",
+                            full: "Rebase rewrites commits (new SHAs) to create a linear history. Interactive rebase (-i) lets you reorder, squash, edit, or drop commits — incredibly powerful for cleaning up before a PR.",
+                            cmds: ["git rebase main                # rebase onto main", "git rebase -i HEAD~3           # interactive: last 3 commits", "git rebase --continue          # after resolving a conflict", "git rebase --abort             # cancel the whole rebase", "", "# In interactive mode:", "# pick = use, squash = combine, drop = remove"],
+                            tip: "GOLDEN RULE: Never rebase commits that have been pushed to a shared branch. Only rebase local, unpushed work."
+                        }
+                    }
+                ]
+            },
+            {
+                id: "remote", label: "Phase 4 — Remote & Collaboration", icon: "🌐", color: "#F05032", rgb: "240,80,50",
+                nodes: [
+                    {
+                        id: "clone", label: "git clone", sub: "Get a Repo", ico: "copy",
+                        desc: "Download a complete copy of a remote repository — all history, branches and tags included.",
+                        chips: ["Download", "origin", "Full History"],
+                        info: {
+                            tag: "Command", title: "git clone",
+                            def: "Creates a local copy of a remote repository including all branches, tags, and commit history.",
+                            full: "git clone sets up the remote as 'origin' automatically. You get a full local copy — not just the latest files. Shallow clones (--depth 1) are useful when you only need the current state.",
+                            cmds: ["git clone https://github.com/user/repo.git", "git clone repo.git my-folder         # custom folder name", "git clone --depth 1 repo.git          # shallow clone", "git clone --branch develop repo.git   # clone specific branch", "git clone --single-branch repo.git    # only default branch"],
+                            tip: "Use --depth 1 in CI/CD pipelines for speed. You get the latest state without downloading all history — often 10x faster for large repos."
+                        }
+                    },
+                    {
+                        id: "remote-cmd", label: "git remote", sub: "Manage Remotes", ico: "github",
+                        desc: "Add, remove, and inspect remote connections. 'origin' is the standard name for the primary remote.",
+                        chips: ["origin", "upstream", "URLs"],
+                        info: {
+                            tag: "Command", title: "git remote",
+                            def: "Manages connections to remote repositories — add, remove, rename, and inspect them.",
+                            full: "You can have multiple remotes. 'origin' points to your fork, 'upstream' points to the original. This pattern is standard in open-source fork workflows.",
+                            cmds: ["git remote -v                         # list remotes with URLs", "git remote add origin <url>           # add remote", "git remote add upstream <url>         # add original repo", "git remote remove origin              # remove remote", "git remote rename origin old          # rename", "git remote set-url origin <new-url>   # change URL"],
+                            tip: "In a fork workflow: 'origin' is your fork, 'upstream' is the original. Keep them both configured to stay in sync."
+                        }
+                    },
+                    {
+                        id: "push", label: "git push", sub: "Upload Changes", ico: "upload",
+                        desc: "Send your local commits to the remote repository so your team can access them.",
+                        chips: ["Publish", "upstream", "force-with-lease"],
+                        info: {
+                            tag: "Command", title: "git push",
+                            def: "Uploads local branch commits to the remote repository, making them available to collaborators.",
+                            full: "The first push of a new branch uses -u to set the upstream tracking. After that, plain 'git push' works. Never force-push to shared branches without coordination.",
+                            cmds: ["git push origin main                # push to main", "git push -u origin feature/x       # first push (set upstream)", "git push                           # push tracked branch", "git push --force-with-lease        # safer force push", "git push --tags                    # push tags", "git push origin :old-branch        # delete remote branch"],
+                            tip: "--force-with-lease is the safe version of --force. It fails if someone else has pushed since your last fetch, preventing accidental data loss."
+                        }
+                    },
+                    {
+                        id: "pull", label: "git pull", sub: "Download Changes", ico: "download2",
+                        desc: "Fetch remote changes and merge them into your current branch. Keeps you in sync with your team.",
+                        chips: ["fetch+merge", "--rebase", "Sync"],
+                        info: {
+                            tag: "Command", title: "git pull",
+                            def: "Fetches changes from the remote and merges them into the current branch (fetch + merge in one step).",
+                            full: "git pull is shorthand for git fetch followed by git merge (or rebase). Using --rebase keeps history cleaner. You can also run git fetch first to inspect changes before merging.",
+                            cmds: ["git pull                     # pull current branch", "git pull origin main         # pull specific branch", "git pull --rebase            # pull and rebase instead of merge", "git fetch                    # fetch without merging", "git fetch --all              # fetch from all remotes", "git log FETCH_HEAD           # see fetched commits"],
+                            tip: "Set pull.rebase=true globally: git config --global pull.rebase true — keeps your history linear without needing to type --rebase every time."
+                        }
+                    },
+                    {
+                        id: "fork-pr", label: "Fork & Pull Request", sub: "Open Source Workflow", ico: "fork",
+                        desc: "Fork a repo to get your own copy, make changes in a branch, then open a PR to propose merging into the original.",
+                        chips: ["Open Source", "Code Review", "PR"],
+                        info: {
+                            tag: "Workflow", title: "Fork & Pull Request",
+                            def: "Fork creates a server-side copy of a repo in your account. A PR proposes merging your branch into the original.",
+                            full: "The Fork & PR model is the foundation of open-source collaboration. You never need write access to contribute — fork, change, PR. Maintainers review your diff and can request changes before merging.",
+                            cmds: ["# 1. Fork on GitHub UI", "# 2. Clone your fork:", "git clone https://github.com/YOU/repo.git", "git remote add upstream https://github.com/ORG/repo.git", "", "# 3. Create a branch, make changes, push:", "git switch -c fix/typo", "git push -u origin fix/typo", "", "# 4. Open PR on GitHub UI", "# 5. Keep fork in sync:", "git fetch upstream && git merge upstream/main"],
+                            tip: "Always PR from a feature branch, never from main. This keeps your fork's main clean and lets you have multiple PRs open simultaneously."
+                        }
+                    }
+                ]
+            },
+            {
+                id: "history", label: "Phase 5 — History & Inspection", icon: "🔍", color: "#ec4899", rgb: "236,72,153",
+                nodes: [
+                    {
+                        id: "blame", label: "git blame", sub: "Who wrote this?", ico: "user",
+                        desc: "See who last modified each line of a file and in which commit. Trace the origin of any piece of code.",
+                        chips: ["Annotation", "Author", "Context"],
+                        info: {
+                            tag: "Command", title: "git blame",
+                            def: "Annotates each line of a file with the commit hash, author, and date that last changed it.",
+                            full: "git blame helps you understand code context — not to assign fault, but to find who to ask about a change. Use it to trace why a line was written, then check that commit message and PR for full context.",
+                            cmds: ["git blame file.txt             # annotate whole file", "git blame -L 10,25 file.txt    # specific line range", "git blame -w file.txt          # ignore whitespace changes", "git blame --follow file.txt    # follow renames", "git show <commit-hash>         # see the full commit context"],
+                            tip: "Don't blame people — understand context. Once you have the commit hash, run git show <hash> to see the full change and its message."
+                        }
+                    },
+                    {
+                        id: "stash", label: "git stash", sub: "Shelve WIP", ico: "inbox",
+                        desc: "Temporarily save uncommitted work when you need to switch context without losing your changes.",
+                        chips: ["WIP", "Stack", "Context Switch"],
+                        info: {
+                            tag: "Command", title: "git stash",
+                            def: "Temporarily shelves (stashes) all uncommitted changes so you can switch branches or context without committing.",
+                            full: "Stash saves your dirty working directory onto a stack. You can name stashes for clarity, have multiple stashes, and apply them selectively. Great for quick context switches.",
+                            cmds: ["git stash                     # stash all changes", "git stash push -m \"WIP: nav\"  # named stash", "git stash list                # see all stashes", "git stash pop                 # apply + remove latest", "git stash apply stash@{1}    # apply specific stash", "git stash drop stash@{0}     # remove without applying", "git stash -u                  # include untracked files"],
+                            tip: "Use descriptive names: git stash push -m 'WIP: login form validation'. You'll thank yourself later when you have 5 stashes."
+                        }
+                    }
+                ]
+            },
+            {
+                id: "advanced", label: "Phase 6 — Advanced Git", icon: "⚡", color: "#06b6d4", rgb: "6,182,212",
+                nodes: [
+                    {
+                        id: "reset", label: "git reset", sub: "Undo Commits (local)", ico: "rotCcw",
+                        desc: "Move the branch pointer back in history. Three modes control how far the changes unwind — use with care.",
+                        chips: ["--soft", "--mixed", "--hard"],
+                        info: {
+                            tag: "Command", title: "git reset",
+                            def: "Moves the current branch pointer backward, optionally modifying the staging area and working directory.",
+                            full: "--soft: only moves HEAD (changes stay staged). --mixed: unstages changes (default). --hard: discards everything. Use reset only on local, unpushed commits — it rewrites history.",
+                            cmds: ["git reset HEAD~1            # undo last commit, keep changes staged...", "git reset --soft HEAD~1     # ...same: keep staged", "git reset --mixed HEAD~1    # ...unstage changes (default)", "git reset --hard HEAD~1     # discard all changes (dangerous!)", "git reset HEAD file.txt     # unstage one file"],
+                            tip: "If you accidentally ran --hard, act fast: git reflog shows where HEAD was before — you can reset back to it within ~30 days."
+                        }
+                    },
+                    {
+                        id: "revert", label: "git revert", sub: "Undo Commits (safe)", ico: "undo",
+                        desc: "Create a new commit that undoes a previous one, preserving the full history. The safe undo for shared branches.",
+                        chips: ["Safe", "Public", "New Commit"],
+                        info: {
+                            tag: "Command", title: "git revert",
+                            def: "Creates a new commit that exactly reverses the changes from a previous commit, preserving full history.",
+                            full: "revert doesn't erase history — it adds a new commit that undoes changes. This is the correct way to undo commits on shared/public branches that others have pulled.",
+                            cmds: ["git revert HEAD              # revert last commit", "git revert abc1234           # revert specific commit", "git revert HEAD~3..HEAD      # revert a range", "git revert --no-commit HEAD  # stage without committing", "", "# Use reset for local work", "# Use revert for shared branches"],
+                            tip: "Simple rule: Use git revert on anything others might have pulled. Use git reset only on your own local, unpushed commits."
+                        }
+                    },
+                    {
+                        id: "cherry", label: "git cherry-pick", sub: "Apply Single Commits", ico: "cherry",
+                        desc: "Grab a specific commit from any branch and apply it to your current branch without merging the whole branch.",
+                        chips: ["Selective", "Hotfix", "Cross-branch"],
+                        info: {
+                            tag: "Command", title: "git cherry-pick",
+                            def: "Applies the changes from one or more specific commits onto the current branch.",
+                            full: "Cherry-pick is perfect for applying a bug fix from a development branch to a production release branch, without pulling in unfinished features. Each cherry-pick creates a new commit with a new SHA.",
+                            cmds: ["git cherry-pick abc1234          # apply one commit", "git cherry-pick abc..def         # apply a range", "git cherry-pick -n abc1234       # stage but don't commit", "git cherry-pick --continue       # after resolving conflict", "git cherry-pick --abort          # cancel"],
+                            tip: "Cherry-pick is ideal for hotfixes: fix on develop, cherry-pick to release/v1.x. But if you find yourself cherry-picking often, reconsider your branching strategy."
+                        }
+                    },
+                    {
+                        id: "tags", label: "git tag", sub: "Mark Releases", ico: "tag",
+                        desc: "Create permanent named checkpoints in your history, typically to mark version releases like v1.0.0.",
+                        chips: ["Semver", "Release", "Annotated"],
+                        info: {
+                            tag: "Command", title: "git tag",
+                            def: "Creates permanent, named pointers to specific commits. Used to mark release versions and important milestones.",
+                            full: "Lightweight tags are just pointers. Annotated tags (-a) store extra metadata (author, date, message) and are recommended for releases. Tags must be explicitly pushed — they don't go with git push.",
+                            cmds: ["git tag                          # list all tags", "git tag v1.0.0                   # lightweight tag", "git tag -a v1.0.0 -m \"Release\"   # annotated tag", "git tag -a v1.0.0 abc1234        # tag a past commit", "git push origin v1.0.0           # push single tag", "git push origin --tags           # push all tags", "git tag -d v1.0.0                # delete local tag"],
+                            tip: "Use Semantic Versioning: MAJOR.MINOR.PATCH — e.g. v2.1.3. Breaking changes → major, new features → minor, bug fixes → patch."
+                        }
+                    }
+                ]
+            },
+            {
+                id: "workflows", label: "Phase 7 — Team Workflows", icon: "🚀", color: "#7c3aed", rgb: "124,58,237",
+                nodes: [
+                    {
+                        id: "gitflow", label: "Git Flow", sub: "Structured Releases", ico: "gitflowIco",
+                        desc: "A comprehensive branching model with main, develop, feature, release, and hotfix branches for scheduled releases.",
+                        chips: ["main", "develop", "feature", "hotfix"],
+                        info: {
+                            tag: "Workflow", title: "Git Flow",
+                            def: "A strict branching model designed for projects with scheduled release cycles, using long-lived main and develop branches.",
+                            full: "Git Flow: everything in main is production-ready. develop is the integration branch. Features branch from develop and merge back. Releases and hotfixes have their own branches. Great for versioned software, complex for continuous delivery.",
+                            cmds: ["# Branch structure:", "# main (production), develop (integration)", "# feature/*, release/*, hotfix/*", "", "git switch -c feature/x develop      # start feature", "git merge --no-ff feature/x develop  # finish feature", "git switch -c release/1.0 develop    # start release", "git switch -c hotfix/bug main        # start hotfix"],
+                            tip: "Git Flow is powerful for versioned software (npm packages, desktop apps) but adds complexity for web apps that deploy continuously."
+                        }
+                    },
+                    {
+                        id: "ghflow", label: "GitHub Flow", sub: "Continuous Delivery", ico: "githubIco",
+                        desc: "Simple: one main branch, always deployable. Create a feature branch, open a PR, review, deploy, merge.",
+                        chips: ["main only", "PR", "Deploy"],
+                        info: {
+                            tag: "Workflow", title: "GitHub Flow",
+                            def: "A lightweight workflow: anything in main is always deployable. Feature branches + PRs are the only construct needed.",
+                            full: "GitHub Flow is simple and effective for teams deploying continuously. The constraint: main must always be in a state ready to deploy. PRs enable code review, discussion, and CI checks before merging.",
+                            cmds: ["# 1. Branch from main", "git switch -c feature/user-auth", "", "# 2. Commit often", "git commit -m \"feat: add login endpoint\"", "", "# 3. Push & open PR", "git push -u origin feature/user-auth", "", "# 4. Review → CI → Deploy preview", "# 5. Merge to main → Auto deploy", "# 6. Delete the branch"],
+                            tip: "Pair GitHub Flow with branch protection rules: require PRs, CI passing, and at least one approval before merging to main."
+                        }
+                    },
+                    {
+                        id: "trunk", label: "Trunk Based Dev", sub: "High Velocity", ico: "trunk",
+                        desc: "Everyone commits directly to main (or very short-lived branches). Feature flags hide incomplete work. Used by Google & Meta.",
+                        chips: ["trunk/main", "Feature Flags", "CI/CD"],
+                        info: {
+                            tag: "Workflow", title: "Trunk-Based Development",
+                            def: "All developers integrate code into a single shared trunk (main) daily, using feature flags to hide incomplete features.",
+                            full: "TBD eliminates merge hell by integrating continuously. Teams deploy multiple times per day. Feature flags in code (if/else conditions) control feature visibility without needing separate branches. Used by Google, Netflix, Meta at massive scale.",
+                            cmds: ["# All commits go to main", "git switch main", "git pull --rebase", "# Small change:", "git commit -m \"feat: add search placeholder\"", "git push origin main", "", "# Feature flags in code:", "# if (featureFlags.newDashboard) { ... }"],
+                            tip: "TBD requires a strong CI pipeline, good test coverage, and cultural buy-in for small commits. Start with GitHub Flow and evolve toward TBD as your team matures."
+                        }
+                    }
+                ]
+            }
+        ];
 
         // ─────────────────────────────────────────────────────────────────────────────
-        // FLATTEN
+        // STATS
         // ─────────────────────────────────────────────────────────────────────────────
-        let allNodes = [], allLinks = [];
-        function flatten(n, pid = null, depth = 0) {
-            allNodes.push({ id: n.id, label: n.label, ico: n.ico, color: n.color, depth, pid, info: n.info });
-            if (pid !== null) allLinks.push({ source: pid, target: n.id });
-            if (n.ch) n.ch.forEach(c => flatten(c, n.id, depth + 1));
-        }
-        flatten(DATA);
-        document.getElementById("ptext").textContent = `0 / ${allNodes.length}`;
-
-        // ─────────────────────────────────────────────────────────────────────────────
-        // D3
-        // ─────────────────────────────────────────────────────────────────────────────
-        const svgEl = d3.select("#main-svg");
-        const defs = svgEl.append("defs");
-        // per-color glow
-        [...new Set(allNodes.map(n => n.color))].forEach(col => {
-            const id = `glow${col.replace("#", "")}`;
-            const f = defs.append("filter").attr("id", id).attr("x", "-60%").attr("y", "-60%").attr("width", "220%").attr("height", "220%");
-            f.append("feGaussianBlur").attr("in", "SourceGraphic").attr("stdDeviation", "6").attr("result", "b");
-            const m = f.append("feMerge"); m.append("feMergeNode").attr("in", "b"); m.append("feMergeNode").attr("in", "SourceGraphic");
+        let totalNodes = 0, totalCmds = 0;
+        PHASES.forEach(p => {
+            totalNodes += p.nodes.length;
+            p.nodes.forEach(n => { if (n.info.cmds) totalCmds += n.info.cmds.filter(c => c.trim() && !c.trim().startsWith('#')).length; });
         });
+        document.getElementById("sTotal").textContent = totalNodes;
+        document.getElementById("sCmd").textContent = totalCmds + "+";
+        document.getElementById("sPhase").textContent = PHASES.length;
 
-        const canvas = svgEl.append("g");
-        const zoomB = d3.zoom().scaleExtent([0.1, 4]).on("zoom", e => canvas.attr("transform", e.transform));
-        svgEl.call(zoomB);
+        // ─────────────────────────────────────────────────────────────────────────────
+        // BUILD DOM
+        // ─────────────────────────────────────────────────────────────────────────────
+        const roadmap = document.getElementById("roadmap");
+        const allItems = []; // flat list of all {el, type} for sequential reveal
 
-        const linkG = canvas.append("g");
-        const nodeG = canvas.append("g");
+        PHASES.forEach((phase, pi) => {
+            const phaseEl = document.createElement("div");
+            phaseEl.className = "phase";
 
-        const R = (d) => d.depth === 0 ? 34 : d.depth === 1 ? 24 : 17;
+            // Phase header
+            const ph = document.createElement("div");
+            ph.className = "phase-header";
+            ph.innerHTML = `<div class="phase-pill" style="color:${phase.color};border-color:${phase.color}22;background:${phase.color}08"><span class="phase-icon">${phase.icon}</span>${phase.label}</div>`;
+            phaseEl.appendChild(ph);
+            allItems.push({ el: ph, type: "phase" });
 
-        function initGraph() {
-            const W = document.getElementById("graph-container").clientWidth;
-            const H = document.getElementById("graph-container").clientHeight;
-            window.sim = d3.forceSimulation(allNodes)
-                .force("link", d3.forceLink(allLinks).id(d => d.id).distance(d => {
-                    const s = allNodes.find(n => n.id === (d.source.id || d.source));
-                    return s?.depth === 0 ? 190 : s?.depth === 1 ? 140 : 110;
-                }).strength(0.5))
-                .force("charge", d3.forceManyBody().strength(-450))
-                .force("center", d3.forceCenter(W / 2, H / 2))
-                .force("collision", d3.forceCollide(d => R(d) + 42))
-                .alphaDecay(0.016)
-                .on("tick", tick);
+            // Nodes
+            phase.nodes.forEach((node, ni) => {
+                const row = document.createElement("div");
+                row.className = "rnode";
+                row.style.setProperty("--node-color", phase.color);
+                row.style.setProperty("--node-rgb", phase.rgb);
 
-            window.linkSel = linkG.selectAll("line").data(allLinks).join("line")
-                .attr("class", "link-line")
-                .attr("stroke", d => { const s = allNodes.find(n => n.id === (d.source.id || d.source)); return s ? s.color + "44" : "#ffffff22"; })
-                .attr("stroke-width", 1.5).attr("stroke-dasharray", "5,5").style("opacity", 0);
+                const card = document.createElement("div");
+                card.className = "card";
+                card.style.setProperty("--c", phase.color);
 
-            window.nodeSel = nodeG.selectAll("g.ng").data(allNodes).join("g").attr("class", "ng")
-                .attr("id", d => "ng" + d.id).style("opacity", 0).style("cursor", "pointer")
-                .call(d3.drag()
-                    .on("start", (e, d) => { if (!e.active) window.sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-                    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
-                    .on("end", (e, d) => { if (!e.active) window.sim.alphaTarget(0); d.fx = null; d.fy = null; })
-                ).on("click", onNodeClick);
+                card.innerHTML = `
+      <div class="card-head">
+        <div class="card-icon" style="--ic-bg:${phase.color}10;--ic-border:${phase.color}30">${ICO[node.ico] || ICO.git}</div>
+        <div>
+          <div class="card-title">${node.label}</div>
+          <div class="card-sub">${node.sub}</div>
+        </div>
+      </div>
+      <div class="card-desc">${node.desc}</div>
+      <div class="card-chips">${node.chips.map(c => `<span class="chip${c === node.chips[0] ? ' main' : ''}">${c}</span>`).join("")}</div>
+    `;
 
-            // Glow ring
-            window.nodeSel.append("circle")
-                .attr("r", d => R(d) + 8).attr("fill", "none")
-                .attr("stroke", d => d.color).attr("stroke-width", 1).attr("opacity", 0.18)
-                .attr("class", "gr");
+                card.addEventListener("click", () => openPanel(node, phase.color));
 
-            // Main circle
-            window.nodeSel.append("circle").attr("class", "mc")
-                .attr("r", d => R(d))
-                .attr("fill", d => d.color + "15")
-                .attr("stroke", d => d.color)
-                .attr("stroke-width", d => d.depth === 0 ? 2.5 : 1.8)
-                .style("filter", d => `url(#glow${d.color.replace("#", "")})`)
-                .on("mouseover", function (e, d) { d3.select(this).attr("fill", d.color + "30"); })
-                .on("mouseout", function (e, d) { d3.select(this).attr("fill", d.color + "15"); });
+                const half = document.createElement("div");
+                half.className = "rnode-half";
+                half.appendChild(card);
 
-            // Icon via foreignObject
-            window.nodeSel.each(function (d) {
-                const r = R(d), sz = r * 1.15;
-                const fo = d3.select(this).append("foreignObject")
-                    .attr("x", -sz / 2).attr("y", -sz / 2).attr("width", sz).attr("height", sz)
-                    .style("pointer-events", "none");
-                fo.append("xhtml:div")
-                    .style("width", "100%").style("height", "100%")
-                    .style("display", "flex").style("align-items", "center").style("justify-content", "center")
-                    .html(ICO[d.ico] || ICO["git"]);
+                const spacer = document.createElement("div");
+                spacer.className = "rnode-spacer";
+
+                // connector line
+                const connector = document.createElement("div");
+                connector.className = "rnode-connector";
+                connector.style.background = `linear-gradient(to right, ${phase.color}66, ${phase.color}22)`;
+                if ((ni % 2) !== 0) connector.style.background = `linear-gradient(to left, ${phase.color}66, ${phase.color}22)`;
+
+                if (ni % 2 === 0) {
+                    row.appendChild(half);
+                    row.appendChild(spacer);
+                } else {
+                    row.appendChild(spacer);
+                    row.appendChild(half);
+                }
+                row.appendChild(connector);
+
+                phaseEl.appendChild(row);
+                allItems.push({ el: row, type: "node" });
             });
 
-            // Label
-            window.nodeSel.append("text").attr("class", "node-label")
-                .attr("y", d => R(d) + 15)
-                .attr("fill", d => d.color)
-                .style("font-size", d => d.depth === 0 ? "12px" : d.depth === 1 ? "11px" : "10px")
-                .style("font-weight", d => d.depth <= 1 ? "700" : "500")
-                .text(d => d.label);
-        }
-
-        function tick() {
-            window.linkSel?.attr("x1", d => d.source.x || 0).attr("y1", d => d.source.y || 0)
-                .attr("x2", d => d.target.x || 0).attr("y2", d => d.target.y || 0);
-            window.nodeSel?.attr("transform", d => `translate(${d.x || 0},${d.y || 0})`);
-        }
+            roadmap.appendChild(phaseEl);
+        });
 
         // ─────────────────────────────────────────────────────────────────────────────
-        // REVEAL
+        // REVEAL ANIMATION
         // ─────────────────────────────────────────────────────────────────────────────
         let rIdx = 0, rTimer = null, paused = false;
-        const vis = new Set();
 
         function revealNext() {
-            if (paused || rIdx >= allNodes.length) { if (rIdx >= allNodes.length) clearInterval(rTimer); return; }
-            const nd = allNodes[rIdx]; vis.add(nd.id);
-            d3.select("#ng" + nd.id).transition().duration(500).ease(d3.easeBackOut.overshoot(1.4)).style("opacity", 1);
-            if (nd.pid && vis.has(nd.pid)) {
-                window.linkSel.filter(d => {
-                    const s = d.source.id || d.source, t = d.target.id || d.target;
-                    return s === nd.pid && t === nd.id;
-                }).transition().duration(500).style("opacity", 1);
+            if (paused || rIdx >= allItems.length) {
+                if (rIdx >= allItems.length) { clearInterval(rTimer); showDone(); }
+                return;
             }
-            rIdx++; updProg();
-            if (rIdx >= allNodes.length) clearInterval(rTimer);
+            const item = allItems[rIdx];
+            item.el.classList.add("visible");
+            rIdx++;
+            updateProg();
         }
 
-        function updProg() {
-            const p = (rIdx / allNodes.length) * 100;
-            document.getElementById("pfill").style.width = p + "%";
-            document.getElementById("ptext").textContent = `${rIdx} / ${allNodes.length}`;
+        function updateProg() {
+            const pct = Math.round((rIdx / allItems.length) * 100);
+            document.getElementById("pct").textContent = pct + "%";
+            document.getElementById("pbar").style.width = pct + "%";
+            const circumference = 69.1;
+            const offset = circumference - (pct / 100) * circumference;
+            document.getElementById("ring").style.strokeDashoffset = offset;
         }
 
         function startReveal() {
             const spd = parseInt(document.getElementById("speed").value);
-            clearInterval(rTimer); rTimer = setInterval(revealNext, spd);
+            clearInterval(rTimer);
+            rTimer = setInterval(revealNext, spd);
+        }
+
+        function showDone() {
+            setTimeout(() => document.getElementById("doneBanner").classList.add("show"), 400);
         }
 
         // ─────────────────────────────────────────────────────────────────────────────
         // PANEL
         // ─────────────────────────────────────────────────────────────────────────────
-        function onNodeClick(e, d) {
-            e.stopPropagation();
-            d3.selectAll(".mc").style("stroke-width", n => n.depth === 0 ? 2.5 : 1.8);
-            d3.select("#ng" + d.id).select(".mc").style("stroke-width", 3.5);
-            const { info, ico, color } = d;
-            if (!info) return;
-            const piw = document.getElementById("piw");
-            piw.innerHTML = ICO[ico] || ICO["git"];
-            piw.style.borderColor = color + "66"; piw.style.background = color + "14";
+        function openPanel(node, color) {
+            const { info, ico } = node;
+            const piw = document.getElementById("pico");
+            piw.innerHTML = ICO[ico] || ICO.git;
+            piw.style.borderColor = color + "44";
+            piw.style.background = color + "10";
             document.getElementById("ptag").textContent = info.tag;
             document.getElementById("ptitle").textContent = info.title;
+            document.getElementById("ptitle").style.color = color;
+
             let html = `
-    <div class="panel-section"><div class="slabel">Definition</div><div class="stext">${info.def}</div></div>
-    <div class="panel-section"><div class="slabel">Description</div><div class="stext">${info.desc}</div></div>
+    <div class="psec">
+      <div class="plabel">Definition</div>
+      <div class="ptext">${info.def}</div>
+    </div>
+    <div class="psec">
+      <div class="plabel">Deep Dive</div>
+      <div class="ptext">${info.full}</div>
+    </div>
   `;
-            if (info.cmds?.length) {
+
+            if (info.cmds && info.cmds.length) {
                 const lines = info.cmds.map(c => {
                     const esc = c.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    if (esc.trim().startsWith("#")) return `<span class="cc">${esc}</span>`;
-                    if (/^git /.test(esc.trim())) return `<span class="cg">${esc}</span>`;
-                    return `<span class="cn">${esc}</span>`;
-                }).join("\n");
-                html += `<div class="panel-section"><div class="slabel">Commands</div><div class="code-block">${lines}</div></div>`;
+                    if (!esc.trim()) return `<span class="cl"> </span>`;
+                    if (esc.trim().startsWith("#")) return `<span class="cl cc">${esc}</span>`;
+                    if (/^git /.test(esc.trim())) return `<span class="cl cg">${esc}</span>`;
+                    if (esc.trim().startsWith("brew") || esc.trim().startsWith("apt") || esc.trim().startsWith("sudo")) return `<span class="cl cy">${esc}</span>`;
+                    return `<span class="cl cw">${esc}</span>`;
+                }).join("");
+                html += `
+      <div class="psec">
+        <div class="plabel">Commands</div>
+        <div class="code-wrap">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div></div>
+            <span class="code-lang">BASH / GIT</span>
+          </div>
+          <div class="code-body">${lines}</div>
+        </div>
+      </div>
+    `;
             }
-            if (info.tip) html += `<div class="panel-section"><div class="slabel">💡 Pro Tip</div><div class="tip-box"><span class="tl">Tip:</span> ${info.tip}</div></div>`;
+
+            if (info.tip) {
+                html += `
+      <div class="psec">
+        <div class="plabel">Pro Tip</div>
+        <div class="tip-wrap">
+          <span class="tip-icon">💡</span>
+          <div class="tip-text">${info.tip}</div>
+        </div>
+      </div>
+    `;
+            }
+
             document.getElementById("pbody").innerHTML = html;
             document.getElementById("panel").classList.add("open");
+            document.getElementById("overlay").classList.add("active");
+            document.getElementById("pbody").scrollTop = 0;
         }
 
-        document.getElementById("closePanel").addEventListener("click", () => {
+        function closePanel() {
             document.getElementById("panel").classList.remove("open");
-            d3.selectAll(".mc").style("stroke-width", n => n.depth === 0 ? 2.5 : 1.8);
-        });
-        svgEl.on("click", () => {
-            document.getElementById("panel").classList.remove("open");
-            d3.selectAll(".mc").style("stroke-width", n => n.depth === 0 ? 2.5 : 1.8);
-        });
+            document.getElementById("overlay").classList.remove("active");
+        }
+
+        document.getElementById("pclose").addEventListener("click", closePanel);
+        document.getElementById("overlay").addEventListener("click", closePanel);
 
         // ─────────────────────────────────────────────────────────────────────────────
         // CONTROLS
         // ─────────────────────────────────────────────────────────────────────────────
         document.getElementById("pauseBtn").addEventListener("click", () => {
             paused = !paused;
-            document.getElementById("pauseBtn").textContent = paused ? "▶ Resume" : "⏸ Pause";
+            document.getElementById("pauseBtn").innerHTML = paused ? "▶ <span>Resume</span>" : "⏸ <span>Pause</span>";
             if (!paused) startReveal();
         });
+
         document.getElementById("restartBtn").addEventListener("click", () => {
-            clearInterval(rTimer); rIdx = 0; vis.clear(); paused = false;
-            document.getElementById("pauseBtn").textContent = "⏸ Pause";
-            d3.selectAll(".ng").style("opacity", 0);
-            window.linkSel.style("opacity", 0);
-            updProg();
-            document.getElementById("panel").classList.remove("open");
-            setTimeout(startReveal, 800);
+            clearInterval(rTimer); paused = false;
+            document.getElementById("pauseBtn").innerHTML = "⏸ <span>Pause</span>";
+            rIdx = 0; updateProg();
+            allItems.forEach(item => item.el.classList.remove("visible"));
+            document.getElementById("doneBanner").classList.remove("show");
+            setTimeout(startReveal, 600);
         });
-        document.getElementById("speed").addEventListener("input", () => { if (!paused) { clearInterval(rTimer); startReveal(); } });
-        window.addEventListener("resize", () => {
-            const W = document.getElementById("graph-container").clientWidth;
-            const H = document.getElementById("graph-container").clientHeight;
-            window.sim.force("center", d3.forceCenter(W / 2, H / 2)).alpha(0.3).restart();
+
+        document.getElementById("speed").addEventListener("input", () => {
+            if (!paused) { clearInterval(rTimer); startReveal(); }
+        });
+
+        // Keyboard shortcut
+        document.addEventListener("keydown", e => {
+            if (e.key === " " || e.key === "Spacebar") {
+                e.preventDefault();
+                document.getElementById("pauseBtn").click();
+            }
+            if (e.key === "Escape") closePanel();
         });
 
         // ─────────────────────────────────────────────────────────────────────────────
         // LAUNCH
         // ─────────────────────────────────────────────────────────────────────────────
-        initGraph();
-        window.sim.restart();
-        setTimeout(startReveal, 1200);
+        setTimeout(startReveal, 800);
     </script>
 </body>
 
